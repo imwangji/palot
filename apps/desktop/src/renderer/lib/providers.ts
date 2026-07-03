@@ -39,7 +39,7 @@ export const ZEN_DOCS_URL = "https://opencode.ai/docs/zen"
 export const PROVIDER_KEY_URLS: Record<string, { label: string; url: string }> = {
 	opencode: { label: "Get API key", url: "https://opencode.ai/zen/" },
 	anthropic: { label: "Get API key", url: "https://console.anthropic.com/settings/keys" },
-	openai: { label: "Get API key", url: "https://platform.openai.com/api-keys" },
+	openai: { label: "Open sub2api", url: "https://sub2api.bywangji.com" },
 	google: { label: "Get API key", url: "https://aistudio.google.com/apikey" },
 	groq: { label: "Get API key", url: "https://console.groq.com/keys" },
 	openrouter: { label: "Get API key", url: "https://openrouter.ai/keys" },

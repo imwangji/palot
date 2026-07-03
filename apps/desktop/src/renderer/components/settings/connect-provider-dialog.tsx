@@ -78,6 +78,8 @@ interface ProviderField {
 	label: string
 	/** Placeholder text */
 	placeholder: string
+	/** Initial value used when opening the setup form */
+	defaultValue?: string
 	/** Whether this is a secret (password input) */
 	secret?: boolean
 	/** Whether this field is required */
@@ -103,6 +105,30 @@ interface ConfigurableProvider {
  * These show a multi-field form instead of env-var instructions.
  */
 const CONFIGURABLE_PROVIDERS: ConfigurableProvider[] = [
+	{
+		id: "openai",
+		docsAnchor: "openai",
+		fields: [
+			{
+				key: "apiKey",
+				label: "sub2api API Key",
+				placeholder: "sk-...",
+				secret: true,
+				required: true,
+				persist: "auth",
+				help: "Use the API key generated in your sub2api account.",
+			},
+			{
+				key: "baseURL",
+				label: "sub2api Endpoint",
+				placeholder: "https://sub2api.bywangji.com/v1",
+				defaultValue: "https://sub2api.bywangji.com/v1",
+				required: true,
+				persist: "config",
+				help: "OpenAI-compatible endpoint exposed by your sub2api deployment.",
+			},
+		],
+	},
 	{
 		id: "azure",
 		docsAnchor: "azure-openai",
@@ -264,8 +290,15 @@ export function ConnectProviderDialog({
 				return
 			}
 
-			// Multi-env providers: route to either a form or env-var instructions
+			// Configurable providers: route to the structured form so we can set
+			// provider-specific options such as baseURL for OpenAI-compatible gateways.
+			if (provider && CONFIGURABLE_PROVIDER_MAP.has(provider.id)) {
+				setStep({ type: "configure" })
+				return
+			}
+
 			if (provider && authMethods === DEFAULT_API_KEY_METHOD) {
+				// Multi-env providers: route to either a form or env-var instructions
 				const setupType = getMultiEnvSetupType(provider)
 				if (setupType === "configure") {
 					setStep({ type: "configure" })
@@ -533,7 +566,7 @@ function ConfigureProviderView({
 	const [values, setValues] = useState<Record<string, string>>(() => {
 		const initial: Record<string, string> = {}
 		for (const field of config?.fields ?? []) {
-			initial[field.key] = ""
+			initial[field.key] = field.defaultValue ?? ""
 		}
 		return initial
 	})
@@ -542,7 +575,7 @@ function ConfigureProviderView({
 	useEffect(() => {
 		const initial: Record<string, string> = {}
 		for (const field of config?.fields ?? []) {
-			initial[field.key] = ""
+			initial[field.key] = field.defaultValue ?? ""
 		}
 		setValues(initial)
 	}, [config])
