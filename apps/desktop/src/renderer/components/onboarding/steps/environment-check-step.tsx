@@ -112,7 +112,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 			updateCheck("locate", {
 				status: "success",
 				label: `已找到内置 Agent 引擎 ${result.version}`,
-				detail: result.path ?? undefined,
+				detail: "客户端已内置运行环境，无需额外安装 OpenCode。",
 			})
 
 			// Step 2: Version compatibility

@@ -620,24 +620,24 @@ function ServerFormDialog({ mode, server, open, onOpenChange, children }: Server
 						id="server-password"
 						type="password"
 						placeholder={
-							mode === "edit" && server?.hasPassword ? "Leave empty to keep current" : "Optional"
+							mode === "edit" && server?.hasPassword ? "留空则保持当前密码" : "可选"
 						}
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
 					/>
-					<p className="text-xs text-muted-foreground">Stored securely in your system keychain</p>
+					<p className="text-xs text-muted-foreground">会安全保存到系统钥匙串</p>
 				</div>
 
 				{/* Test connection */}
 				<div className="flex items-center gap-2">
 					<Button variant="outline" size="sm" disabled={!isValid || testing} onClick={handleTest}>
 						{testing && <Loader2Icon aria-hidden="true" className="size-3.5 animate-spin" />}
-						Test Connection
+						测试连接
 					</Button>
 					{testResult === null && (
 						<span className="flex items-center gap-1 text-sm text-green-600">
 							<CheckCircle2Icon aria-hidden="true" className="size-3.5" />
-							Connected
+							已连接
 						</span>
 					)}
 					{testResult !== null && testResult !== undefined && (

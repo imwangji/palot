@@ -37,18 +37,18 @@ export const ZEN_DOCS_URL = "https://opencode.ai/docs/zen"
 
 /** External URLs for getting API keys from popular providers */
 export const PROVIDER_KEY_URLS: Record<string, { label: string; url: string }> = {
-	opencode: { label: "Get API key", url: "https://opencode.ai/zen/" },
-	anthropic: { label: "Get API key", url: "https://console.anthropic.com/settings/keys" },
-	openai: { label: "Open sub2api", url: "https://sub2api.bywangji.com" },
-	google: { label: "Get API key", url: "https://aistudio.google.com/apikey" },
-	groq: { label: "Get API key", url: "https://console.groq.com/keys" },
-	openrouter: { label: "Get API key", url: "https://openrouter.ai/keys" },
-	xai: { label: "Get API key", url: "https://console.x.ai/" },
-	mistral: { label: "Get API key", url: "https://console.mistral.ai/api-keys/" },
-	deepseek: { label: "Get API key", url: "https://platform.deepseek.com/api_keys" },
-	cohere: { label: "Get API key", url: "https://dashboard.cohere.com/api-keys" },
-	fireworks: { label: "Get API key", url: "https://fireworks.ai/account/api-keys" },
-	perplexity: { label: "Get API key", url: "https://www.perplexity.ai/settings/api" },
+	opencode: { label: "获取 API Key", url: "https://opencode.ai/zen/" },
+	anthropic: { label: "获取 API Key", url: "https://console.anthropic.com/settings/keys" },
+	openai: { label: "打开 sub2api", url: "https://sub2api.bywangji.com" },
+	google: { label: "获取 API Key", url: "https://aistudio.google.com/apikey" },
+	groq: { label: "获取 API Key", url: "https://console.groq.com/keys" },
+	openrouter: { label: "获取 API Key", url: "https://openrouter.ai/keys" },
+	xai: { label: "获取 API Key", url: "https://console.x.ai/" },
+	mistral: { label: "获取 API Key", url: "https://console.mistral.ai/api-keys/" },
+	deepseek: { label: "获取 API Key", url: "https://platform.deepseek.com/api_keys" },
+	cohere: { label: "获取 API Key", url: "https://dashboard.cohere.com/api-keys" },
+	fireworks: { label: "获取 API Key", url: "https://fireworks.ai/account/api-keys" },
+	perplexity: { label: "获取 API Key", url: "https://www.perplexity.ai/settings/api" },
 }
 
 // ============================================================

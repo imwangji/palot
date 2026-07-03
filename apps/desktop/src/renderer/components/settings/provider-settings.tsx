@@ -75,6 +75,7 @@ import { getBaseClient } from "../../services/connection-manager"
 import { ConnectProviderDialog } from "./connect-provider-dialog"
 import { ProviderIcon } from "./provider-icon"
 import { SettingsSection } from "./settings-section"
+import { Sub2ApiAuthDialog } from "./sub2api-auth-dialog"
 
 const log = createLogger("provider-settings")
 
@@ -89,6 +90,8 @@ const SOURCE_LABELS: Record<string, string> = {
 	custom: "OAuth",
 	config: "配置文件",
 }
+
+const SUB2API_PROVIDER_ID = "openai"
 
 /**
  * Derive a short auth method summary string for a provider.
@@ -129,6 +132,7 @@ export function ProviderSettings() {
 	const { data: authMethods } = useProviderAuthMethods()
 	const [connectDialogProvider, setConnectDialogProvider] = useState<CatalogProvider | null>(null)
 	const [catalogOpen, setCatalogOpen] = useState(false)
+	const [sub2ApiDialogOpen, setSub2ApiDialogOpen] = useState(false)
 
 	const loading = catalogLoading || connectedLoading
 
@@ -136,6 +140,14 @@ export function ProviderSettings() {
 		reloadCatalog()
 		reloadConnected()
 	}, [reloadCatalog, reloadConnected])
+
+	const handleConnectProvider = useCallback((provider: CatalogProvider) => {
+		if (provider.id === SUB2API_PROVIDER_ID) {
+			setSub2ApiDialogOpen(true)
+			return
+		}
+		setConnectDialogProvider(provider)
+	}, [])
 
 	if (loading) {
 		return <ProviderSettingsLoading />
@@ -183,7 +195,7 @@ export function ProviderSettings() {
 							key={provider.id}
 							provider={provider}
 							sourceInfo={connectedInfo?.get(provider.id) ?? null}
-							onConnect={() => setConnectDialogProvider(provider)}
+							onConnect={() => handleConnectProvider(provider)}
 							onReload={reload}
 						/>
 					))}
@@ -196,7 +208,7 @@ export function ProviderSettings() {
 						<AvailableProviderRow
 							key={provider.id}
 							provider={provider}
-							onConnect={() => setConnectDialogProvider(provider)}
+							onConnect={() => handleConnectProvider(provider)}
 						/>
 					))}
 				</SettingsSection>
@@ -223,7 +235,7 @@ export function ProviderSettings() {
 				authMethods={authMethods ?? null}
 				onConnect={(provider) => {
 					setCatalogOpen(false)
-					setConnectDialogProvider(provider)
+					handleConnectProvider(provider)
 				}}
 			/>
 
@@ -235,6 +247,14 @@ export function ProviderSettings() {
 				onClose={() => setConnectDialogProvider(null)}
 				onConnected={() => {
 					setConnectDialogProvider(null)
+					reload()
+				}}
+			/>
+			<Sub2ApiAuthDialog
+				open={sub2ApiDialogOpen}
+				onOpenChange={setSub2ApiDialogOpen}
+				onConnected={() => {
+					setSub2ApiDialogOpen(false)
 					reload()
 				}}
 			/>
@@ -258,7 +278,7 @@ function ProviderSettingsHeader() {
 					rel="noopener noreferrer"
 					className="text-primary hover:underline"
 				>
-					了解更多 &rsaquo;
+					高级设置 &rsaquo;
 				</a>
 			</p>
 		</div>
@@ -388,7 +408,7 @@ function ConnectedProviderRow({
 										render={
 											// biome-ignore lint/a11y/useAnchorContent: content provided via Base UI render prop
 											<a
-												aria-label="Get API key"
+												aria-label="管理 API Key"
 												href={keyUrl.url}
 												target="_blank"
 												rel="noopener noreferrer"
@@ -635,7 +655,7 @@ function CatalogRow({
 		: isSubscription && subscriptionLabel
 			? subscriptionLabel
 			: source
-				? (SOURCE_LABELS[source] ?? "Connected")
+				? (SOURCE_LABELS[source] ?? "已连接")
 				: "已连接"
 
 	// Derive available auth method summary for unconnected providers

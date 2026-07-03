@@ -7,7 +7,7 @@ import { getCredential } from "./credential-store"
 import { findFreePort } from "./find-free-port"
 import { createLogger } from "./logger"
 import { startNotificationWatcher, stopNotificationWatcher } from "./notification-watcher"
-import { getAugmentedOpenCodePath, getOpenCodeBinDirs, resolveOpenCodeCommand } from "./opencode-binary"
+import { getOpenCodeBinDirs, getOpenCodeEnv, resolveOpenCodeCommand } from "./opencode-binary"
 import { getListeningProcessOwner, isCurrentUser, isProcessAlive } from "./process-owner"
 import { readLockfile, removeLockfile, writeLockfile } from "./server-lockfile"
 import { getSettings } from "./settings-store"
@@ -306,7 +306,6 @@ async function spawnServer(
 ): Promise<OpenCodeServer> {
 	// Build PATH with ~/.opencode/bin prepended so we find the opencode binary
 	const opencodeBinDirs = getOpenCodeBinDirs()
-	const augmentedPath = getAugmentedOpenCodePath()
 
 	// Build CLI args
 	const args = ["serve", `--hostname=${hostname}`, `--port=${port}`]
@@ -339,7 +338,7 @@ async function spawnServer(
 	const proc = spawn(opencode.command, args, {
 		cwd: homedir(),
 		stdio: "pipe",
-		env: { ...process.env, PATH: augmentedPath },
+		env: getOpenCodeEnv(),
 		shell: opencode.shell,
 	})
 

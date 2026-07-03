@@ -9,7 +9,7 @@
 import { execFile } from "node:child_process"
 import { coerce, satisfies, valid } from "semver"
 import { createLogger } from "./logger"
-import { getAugmentedOpenCodePath, resolveOpenCodeCommand } from "./opencode-binary"
+import { getOpenCodeEnv, resolveOpenCodeCommand } from "./opencode-binary"
 
 const log = createLogger("compatibility")
 
@@ -63,8 +63,7 @@ function execAsync(
 
 /** Try to find the opencode binary and get its version. */
 async function detectOpenCode(): Promise<{ version: string | null; path: string | null }> {
-	const augmentedPath = getAugmentedOpenCodePath()
-	const env = { ...process.env, PATH: augmentedPath }
+	const env = getOpenCodeEnv()
 	const opencode = resolveOpenCodeCommand()
 
 	// Try `opencode --version` (the correct flag)
@@ -74,11 +73,7 @@ async function detectOpenCode(): Promise<{ version: string | null; path: string 
 		const match = versionOutput.match(/v?(\d+\.\d+\.\d+(?:-[a-zA-Z0-9.]+)?)/)
 		const version = match ? match[1] : versionOutput.trim()
 
-		// Try to find the path with `which` or `where`
-		const whichCmd = process.platform === "win32" ? "where" : "which"
-		const binaryPath = await execAsync(whichCmd, ["opencode"], env)
-
-		return { version, path: binaryPath ?? opencode.command }
+		return { version, path: opencode.command }
 	}
 
 	// Fallback: check if the binary exists at all (might not support --version)

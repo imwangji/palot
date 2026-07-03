@@ -54,3 +54,16 @@ export function getAugmentedOpenCodePath(): string {
 	const sep = process.platform === "win32" ? ";" : ":"
 	return `${getOpenCodeBinDirs().join(sep)}${sep}${process.env.PATH ?? ""}`
 }
+
+export function getOpenCodeEnv(
+	overrides: Record<string, string | undefined> = {},
+): Record<string, string | undefined> {
+	const userData = app.getPath("userData")
+	return {
+		...process.env,
+		PATH: getAugmentedOpenCodePath(),
+		XDG_CONFIG_HOME: path.join(userData, "opencode-config"),
+		XDG_DATA_HOME: path.join(userData, "opencode-data"),
+		...overrides,
+	}
+}
