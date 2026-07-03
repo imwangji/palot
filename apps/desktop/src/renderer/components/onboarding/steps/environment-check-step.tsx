@@ -52,8 +52,8 @@ interface EnvironmentCheckStepProps {
 
 export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckStepProps) {
 	const [checks, setChecks] = useState<CheckItem[]>([
-		{ id: "locate", label: "Locating OpenCode CLI", status: "pending" },
-		{ id: "version", label: "Checking version compatibility", status: "pending" },
+		{ id: "locate", label: "正在查找内置 Agent 引擎", status: "pending" },
+		{ id: "version", label: "正在检查版本兼容性", status: "pending" },
 	])
 	const [openCodeResult, setOpenCodeResult] = useState<OpenCodeCheckResult | null>(null)
 	const [installing, setInstalling] = useState(false)
@@ -91,8 +91,8 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 		setAllDone(false)
 		setOpenCodeResult(null)
 		setChecks([
-			{ id: "locate", label: "Locating OpenCode CLI", status: "running" },
-			{ id: "version", label: "Checking version compatibility", status: "pending" },
+			{ id: "locate", label: "正在查找内置 Agent 引擎", status: "running" },
+			{ id: "version", label: "正在检查版本兼容性", status: "pending" },
 		])
 
 		try {
@@ -103,15 +103,15 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 			if (!result.installed) {
 				updateCheck("locate", {
 					status: "error",
-					label: "OpenCode CLI not found",
-					detail: "Install OpenCode to continue",
+					label: "未找到内置 Agent 引擎",
+					detail: "安装包可能不完整，请重新下载安装最新版客户端。",
 				})
 				return
 			}
 
 			updateCheck("locate", {
 				status: "success",
-				label: `OpenCode ${result.version} found`,
+				label: `已找到内置 Agent 引擎 ${result.version}`,
 				detail: result.path ?? undefined,
 			})
 
@@ -122,7 +122,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 			if (result.compatibility === "too-old") {
 				updateCheck("version", {
 					status: "error",
-					label: "Version not compatible",
+					label: "版本不兼容",
 					detail: result.message ?? undefined,
 				})
 				return
@@ -131,7 +131,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 			if (result.compatibility === "blocked") {
 				updateCheck("version", {
 					status: "error",
-					label: "Version blocked",
+					label: "该版本不可用",
 					detail: result.message ?? undefined,
 				})
 				return
@@ -140,19 +140,19 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 			if (result.compatibility === "too-new") {
 				updateCheck("version", {
 					status: "warning",
-					label: "Newer than tested",
+					label: "版本高于已测试范围",
 					detail: result.message ?? undefined,
 				})
 			} else {
 				updateCheck("version", {
 					status: "success",
-					label: "Version compatible",
+					label: "版本兼容",
 				})
 			}
 
 			setAllDone(true)
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Check failed"
+			const message = err instanceof Error ? err.message : "检查失败"
 			updateCheck("locate", { status: "error", detail: message })
 		}
 	}, [isElectron, updateCheck])
@@ -230,7 +230,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 			const id = `remote-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 			const url = manualUrl.trim()
 			// Derive a name from the URL hostname
-			let name = "Remote Server"
+			let name = "远程服务器"
 			try {
 				const parsed = new URL(url)
 				name = parsed.hostname
@@ -302,9 +302,9 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 		<div className="flex h-full flex-col items-center justify-center px-6">
 			<div className="w-full max-w-lg space-y-6">
 				<div className="text-center">
-					<h2 className="text-xl font-semibold text-foreground">Environment Check</h2>
+					<h2 className="text-xl font-semibold text-foreground">环境检查</h2>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Verifying your setup is ready for Palot.
+						正在确认客户端已准备好启动本地 Agent。
 					</p>
 				</div>
 
@@ -337,20 +337,20 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 					>
 						<p className="text-sm text-muted-foreground">
 							{needsUpdate
-								? "Your OpenCode version is too old. Update to continue."
-								: "Palot needs the OpenCode CLI to function. Install it to continue."}
+								? "内置 Agent 版本过旧，请安装最新版客户端后继续。"
+								: "未找到内置 Agent 引擎。请重新安装最新版客户端。"}
 						</p>
 						<div className="flex gap-2">
 							<Button size="sm" onClick={handleInstall} className="gap-2">
 								<DownloadIcon aria-hidden="true" className="size-3.5" />
-								{needsUpdate ? "Update for me" : "Install for me"}
+								{needsUpdate ? "更新客户端" : "重新检查"}
 							</Button>
 							<Button size="sm" variant="outline" onClick={onSkip}>
-								{needsUpdate ? "Continue anyway" : "I'll install manually"}
+								{needsUpdate ? "仍然继续" : "跳过"}
 							</Button>
 						</div>
 						<p className="text-xs text-muted-foreground/60">
-							Or run: curl -fsSL https://opencode.ai/install | bash
+							普通用户无需单独安装 OpenCode；正式安装包会自动内置。
 						</p>
 					</div>
 				)}
@@ -363,11 +363,10 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 					>
 						<div className="flex items-center gap-2">
 							<GlobeIcon aria-hidden="true" className="size-4 text-primary" />
-							<p className="text-sm font-medium text-foreground">Or connect to a remote server</p>
+							<p className="text-sm font-medium text-foreground">或连接远程 Agent 服务器</p>
 						</div>
 						<p className="text-xs text-muted-foreground">
-							Connect to an OpenCode server running on another machine instead of installing
-							locally.
+							连接另一台机器上运行的 Agent 服务器，而不是使用本机内置引擎。
 						</p>
 
 						{/* mDNS discovered servers */}
@@ -375,7 +374,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 							<div className="space-y-2">
 								<p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
 									<RadarIcon aria-hidden="true" className="size-3" />
-									Discovered on your network
+									在局域网中发现
 								</p>
 								<div className="space-y-1.5">
 									{discoveredServers.map((server) => {
@@ -429,13 +428,13 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 								className="flex w-full items-center gap-3 rounded-md border border-dashed border-border bg-background px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 							>
 								<GlobeIcon aria-hidden="true" className="size-4 shrink-0" />
-								<span>Connect manually by URL...</span>
+								<span>通过 URL 手动连接...</span>
 							</button>
 						) : (
 							<div className="space-y-3 rounded-md border border-border bg-background p-3">
 								<div className="space-y-1.5">
 									<Label htmlFor="onboard-url" className="text-xs">
-										Server URL
+										服务器 URL
 									</Label>
 									<Input
 										id="onboard-url"
@@ -451,7 +450,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 								<div className="grid grid-cols-2 gap-2">
 									<div className="space-y-1.5">
 										<Label htmlFor="onboard-username" className="text-xs">
-											Username
+											用户名
 										</Label>
 										<Input
 											id="onboard-username"
@@ -463,12 +462,12 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 									</div>
 									<div className="space-y-1.5">
 										<Label htmlFor="onboard-password" className="text-xs">
-											Password
+											密码
 										</Label>
 										<Input
 											id="onboard-password"
 											type="password"
-											placeholder="Optional"
+											placeholder="可选"
 											value={manualPassword}
 											onChange={(e) => setManualPassword(e.target.value)}
 											className="h-8 text-sm"
@@ -480,7 +479,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 								{manualTestResult === null && (
 									<p className="flex items-center gap-1 text-xs text-green-600">
 										<CheckCircle2Icon aria-hidden="true" className="size-3" />
-										Connection successful
+										连接成功
 									</p>
 								)}
 								{manualTestResult !== null && manualTestResult !== undefined && (
@@ -500,7 +499,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 										{manualTesting && (
 											<Loader2Icon aria-hidden="true" className="size-3 animate-spin" />
 										)}
-										Test
+										测试
 									</Button>
 									<Button
 										size="sm"
@@ -510,7 +509,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 										{manualSaving && (
 											<Loader2Icon aria-hidden="true" className="size-3 animate-spin" />
 										)}
-										Connect
+										连接
 									</Button>
 									<Button
 										size="sm"
@@ -520,7 +519,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 											setManualTestResult(undefined)
 										}}
 									>
-										Cancel
+										取消
 									</Button>
 								</div>
 							</div>
@@ -548,7 +547,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 						{installing && (
 							<div className="mt-1 flex items-center gap-2 text-zinc-400">
 								<Spinner className="size-3" />
-								Installing...
+								正在处理...
 							</div>
 						)}
 					</div>
@@ -567,7 +566,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 							className="gap-2"
 						>
 							<RefreshCwIcon aria-hidden="true" className="size-3.5" />
-							Re-check
+							重新检查
 						</Button>
 					)}
 
@@ -577,7 +576,7 @@ export function EnvironmentCheckStep({ onComplete, onSkip }: EnvironmentCheckSte
 							onClick={() => onComplete(openCodeResult?.version ?? null)}
 							className="gap-2"
 						>
-							Continue
+							继续
 							<ArrowRightIcon aria-hidden="true" className="size-4" />
 						</Button>
 					)}

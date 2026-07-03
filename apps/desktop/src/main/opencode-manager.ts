@@ -1,7 +1,5 @@
 import { type ChildProcess, spawn } from "node:child_process"
-import { existsSync } from "node:fs"
 import { homedir } from "node:os"
-import path from "node:path"
 import { setTimeout as sleep } from "node:timers/promises"
 import { dialog } from "electron"
 import type { LocalServerConfig } from "../preload/api"
@@ -9,6 +7,7 @@ import { getCredential } from "./credential-store"
 import { findFreePort } from "./find-free-port"
 import { createLogger } from "./logger"
 import { startNotificationWatcher, stopNotificationWatcher } from "./notification-watcher"
+import { getAugmentedOpenCodePath, getOpenCodeBinDirs, resolveOpenCodeCommand } from "./opencode-binary"
 import { getListeningProcessOwner, isCurrentUser, isProcessAlive } from "./process-owner"
 import { readLockfile, removeLockfile, writeLockfile } from "./server-lockfile"
 import { getSettings } from "./settings-store"
@@ -43,29 +42,6 @@ let singleServer: {
 
 const DEFAULT_PORT = 4101
 const DEFAULT_HOSTNAME = "127.0.0.1"
-
-function getOpenCodeBinDirs(): string[] {
-	const dirs = [path.join(homedir(), ".opencode", "bin")]
-	if (process.platform === "win32" && process.env.APPDATA) {
-		dirs.push(path.join(process.env.APPDATA, "npm"))
-	}
-	return dirs
-}
-
-function resolveOpenCodeCommand(): { command: string; shell: boolean } {
-	if (process.platform !== "win32") {
-		return { command: "opencode", shell: false }
-	}
-
-	for (const dir of getOpenCodeBinDirs()) {
-		const cmdPath = path.join(dir, "opencode.cmd")
-		if (existsSync(cmdPath)) {
-			return { command: cmdPath, shell: true }
-		}
-	}
-
-	return { command: "opencode.cmd", shell: true }
-}
 
 // ============================================================
 // Public API
@@ -330,8 +306,7 @@ async function spawnServer(
 ): Promise<OpenCodeServer> {
 	// Build PATH with ~/.opencode/bin prepended so we find the opencode binary
 	const opencodeBinDirs = getOpenCodeBinDirs()
-	const sep = process.platform === "win32" ? ";" : ":"
-	const augmentedPath = `${opencodeBinDirs.join(sep)}${sep}${process.env.PATH ?? ""}`
+	const augmentedPath = getAugmentedOpenCodePath()
 
 	// Build CLI args
 	const args = ["serve", `--hostname=${hostname}`, `--port=${port}`]

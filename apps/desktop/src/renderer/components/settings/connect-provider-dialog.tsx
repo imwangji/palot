@@ -116,7 +116,7 @@ const CONFIGURABLE_PROVIDERS: ConfigurableProvider[] = [
 				secret: true,
 				required: true,
 				persist: "auth",
-				help: "Use the API key generated in your sub2api account.",
+				help: "使用你在 sub2api 账号中生成的 API Key。",
 			},
 			{
 				key: "baseURL",
@@ -125,7 +125,7 @@ const CONFIGURABLE_PROVIDERS: ConfigurableProvider[] = [
 				defaultValue: "https://sub2api.bywangji.com/v1",
 				required: true,
 				persist: "config",
-				help: "OpenAI-compatible endpoint exposed by your sub2api deployment.",
+				help: "你的 sub2api 部署提供的 OpenAI 兼容接口地址。",
 			},
 		],
 	},
@@ -343,12 +343,12 @@ export function ConnectProviderDialog({
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-3">
 						<ProviderIcon id={provider.id} name={provider.name} />
-						{provider.id === ZEN_PROVIDER_ID ? provider.name : `Connect ${provider.name}`}
+						{provider.id === ZEN_PROVIDER_ID ? provider.name : `连接 ${provider.name}`}
 					</DialogTitle>
 					<DialogDescription>
 						{provider.id === ZEN_PROVIDER_ID
-							? "Curated, optimized models for coding agents with a single API key."
-							: `Add your credentials to start using ${provider.name} models`}
+							? "为编程 Agent 优化的模型入口，只需一个 API Key。"
+							: `添加凭证后即可使用 ${provider.name} 的模型`}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -362,7 +362,7 @@ export function ConnectProviderDialog({
 							setState({ status: "loading" })
 							try {
 								const client = getBaseClient()
-								if (!client) throw new Error("Not connected to server")
+								if (!client) throw new Error("尚未连接到本地 Agent 服务")
 								await client.auth.set({
 									providerID: provider.id,
 									auth: { type: "api", key: apiKey },
@@ -370,7 +370,7 @@ export function ConnectProviderDialog({
 								await client.global.dispose()
 								setState({ status: "success" })
 							} catch (err) {
-								const message = err instanceof Error ? err.message : "Failed to connect"
+								const message = err instanceof Error ? err.message : "连接失败"
 								log.error("Failed to set API key", {
 									provider: provider.id,
 									error: err,
@@ -403,7 +403,7 @@ export function ConnectProviderDialog({
 							setState({ status: "loading" })
 							try {
 								const client = getBaseClient()
-								if (!client) throw new Error("Not connected to server")
+								if (!client) throw new Error("尚未连接到本地 Agent 服务")
 								await client.auth.set({
 									providerID: provider.id,
 									auth: { type: "api", key: apiKey },
@@ -411,7 +411,7 @@ export function ConnectProviderDialog({
 								await client.global.dispose()
 								setState({ status: "success" })
 							} catch (err) {
-								const message = err instanceof Error ? err.message : "Failed to connect"
+								const message = err instanceof Error ? err.message : "连接失败"
 								log.error("Failed to set API key", {
 									provider: provider.id,
 									error: err,
@@ -467,7 +467,7 @@ function MethodSelectView({
 }) {
 	return (
 		<div className="space-y-2 py-2">
-			<p className="text-sm text-muted-foreground mb-3">Choose an authentication method:</p>
+			<p className="text-sm text-muted-foreground mb-3">选择认证方式：</p>
 			{authMethods.map((method, index) => (
 				<button
 					key={`${method.type}-${index}`}
@@ -489,7 +489,7 @@ function MethodSelectView({
 					<div>
 						<div className="text-sm font-medium">{method.label}</div>
 						<div className="text-xs text-muted-foreground">
-							{method.type === "api" ? "Enter your API key" : "Sign in via your browser"}
+							{method.type === "api" ? "输入 API Key" : "通过浏览器登录"}
 						</div>
 					</div>
 				</button>
@@ -506,10 +506,9 @@ function EnvSetupView({ provider, onCancel }: { provider: CatalogProvider; onCan
 			<div className="flex items-start gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3">
 				<TerminalIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 				<div className="space-y-2 text-sm">
-					<p className="font-medium">Environment variable setup required</p>
+					<p className="font-medium">需要设置环境变量</p>
 					<p className="text-muted-foreground">
-						{provider.name} requires credentials that must be set as environment variables before
-						starting the app.
+						{provider.name} 需要在启动应用前通过环境变量提供凭证。
 					</p>
 				</div>
 			</div>
@@ -521,10 +520,10 @@ function EnvSetupView({ provider, onCancel }: { provider: CatalogProvider; onCan
 			</div>
 
 			<p className="text-xs text-muted-foreground">
-				Add these to your shell profile (e.g.{" "}
+				把这些变量添加到 shell 配置文件（例如{" "}
 				<code className="rounded bg-muted px-1 py-0.5 text-[11px]">~/.zshrc</code>) or a{" "}
-				<code className="rounded bg-muted px-1 py-0.5 text-[11px]">.env</code> file, then restart
-				the app. The provider will be detected automatically.
+				<code className="rounded bg-muted px-1 py-0.5 text-[11px]">.env</code> 文件），然后重启应用。
+				系统会自动识别该供应商。
 			</p>
 
 			{docsUrl && (
@@ -535,13 +534,13 @@ function EnvSetupView({ provider, onCancel }: { provider: CatalogProvider; onCan
 					className="flex items-center gap-1.5 text-xs text-primary hover:underline"
 				>
 					<ExternalLinkIcon className="size-3" aria-hidden="true" />
-					View setup guide on opencode.ai
+					查看 opencode.ai 上的配置指南
 				</a>
 			)}
 
 			<DialogFooter>
 				<Button type="button" variant="outline" onClick={onCancel}>
-					Close
+					关闭
 				</Button>
 			</DialogFooter>
 		</div>
@@ -593,7 +592,7 @@ function ConfigureProviderView({
 			setState({ status: "loading" })
 			try {
 				const client = getBaseClient()
-				if (!client) throw new Error("Not connected to server")
+				if (!client) throw new Error("尚未连接到本地 Agent 服务")
 
 				// Separate auth fields from config fields
 				const authField = config.fields.find((f) => f.persist === "auth")
@@ -627,7 +626,7 @@ function ConfigureProviderView({
 				await client.global.dispose()
 				setState({ status: "success" })
 			} catch (err) {
-				const message = err instanceof Error ? err.message : "Failed to connect"
+				const message = err instanceof Error ? err.message : "连接失败"
 				log.error("Failed to configure provider", {
 					provider: provider.id,
 					error: err,
@@ -648,7 +647,7 @@ function ConfigureProviderView({
 						<Label htmlFor={`field-${field.key}`}>
 							{field.label}
 							{!field.required && (
-								<span className="ml-1 text-xs font-normal text-muted-foreground">(optional)</span>
+								<span className="ml-1 text-xs font-normal text-muted-foreground">(可选)</span>
 							)}
 						</Label>
 						<Input
@@ -671,7 +670,7 @@ function ConfigureProviderView({
 						className="flex items-center gap-1.5 text-xs text-primary hover:underline"
 					>
 						<ExternalLinkIcon className="size-3" aria-hidden="true" />
-						View setup guide on opencode.ai
+						查看 opencode.ai 上的配置指南
 					</a>
 				)}
 
@@ -685,16 +684,16 @@ function ConfigureProviderView({
 
 			<DialogFooter className="mt-4">
 				<Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-					Cancel
+					取消
 				</Button>
 				<Button type="submit" disabled={!requiredFieldsFilled || isLoading}>
 					{isLoading ? (
 						<>
 							<Spinner className="size-4" />
-							Connecting...
+							正在连接...
 						</>
 					) : (
-						"Connect"
+						"连接"
 					)}
 				</Button>
 			</DialogFooter>
@@ -781,15 +780,15 @@ function ApiKeyView({
 							className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
 						>
 							<ExternalLinkIcon className="size-2.5" aria-hidden="true" />
-							{PROVIDER_KEY_URLS[provider.id].label} at{" "}
+							{PROVIDER_KEY_URLS[provider.id].label}：
 							{new URL(PROVIDER_KEY_URLS[provider.id].url).hostname}
 						</a>
 					)}
 					{provider.env.length > 0 && (
 						<p className="text-xs text-muted-foreground">
-							You can also set this via the{" "}
+							你也可以通过{" "}
 							<code className="rounded bg-muted px-1 py-0.5 text-[11px]">{provider.env[0]}</code>{" "}
-							environment variable
+							环境变量设置
 						</p>
 					)}
 				</div>
@@ -805,20 +804,20 @@ function ApiKeyView({
 			<DialogFooter className="mt-4">
 				{onBack && (
 					<Button type="button" variant="ghost" onClick={onBack} disabled={isLoading}>
-						Back
+						返回
 					</Button>
 				)}
 				<Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-					Cancel
+					取消
 				</Button>
 				<Button type="submit" disabled={!apiKey.trim() || isLoading}>
 					{isLoading ? (
 						<>
 							<Spinner className="size-4" />
-							Connecting...
+							正在连接...
 						</>
 					) : (
-						"Connect"
+						"连接"
 					)}
 				</Button>
 			</DialogFooter>
@@ -886,7 +885,7 @@ function OAuthView({
 			setState({ status: "loading" })
 			try {
 				const client = getBaseClient()
-				if (!client) throw new Error("Not connected to server")
+				if (!client) throw new Error("尚未连接到本地 Agent 服务")
 				const result = await client.provider.oauth.authorize({
 					providerID: provider.id,
 					method: methodIndex,
@@ -902,7 +901,7 @@ function OAuthView({
 					| undefined
 
 				if (!data?.url) {
-					throw new Error("No authorization URL returned")
+					throw new Error("未返回授权链接")
 				}
 
 				setAuthUrl(data.url)
@@ -920,7 +919,7 @@ function OAuthView({
 				}
 			} catch (err) {
 				if (cancelled) return
-				const message = err instanceof Error ? err.message : "Failed to start OAuth"
+				const message = err instanceof Error ? err.message : "启动 OAuth 失败"
 				log.error("Failed to start OAuth", { provider: provider.id, error: err })
 				setState({ status: "error", message })
 			}
@@ -939,7 +938,7 @@ function OAuthView({
 			setState({ status: "loading" })
 			try {
 				const client = getBaseClient()
-				if (!client) throw new Error("Not connected to server")
+				if (!client) throw new Error("尚未连接到本地 Agent 服务")
 				await client.provider.oauth.callback({
 					providerID: provider.id,
 					method: methodIndex,
@@ -948,7 +947,7 @@ function OAuthView({
 				await client.global.dispose()
 				onSuccess()
 			} catch (err) {
-				const message = err instanceof Error ? err.message : "Failed to complete OAuth"
+				const message = err instanceof Error ? err.message : "完成 OAuth 失败"
 				log.error("Failed to complete OAuth callback", {
 					provider: provider.id,
 					error: err,
@@ -964,7 +963,7 @@ function OAuthView({
 			<form onSubmit={handleCodeSubmit}>
 				<div className="space-y-4 py-2">
 					<p className="text-sm text-muted-foreground">
-						A browser window has been opened. Sign in and paste the authorization code below.
+						已打开浏览器窗口。请登录后把授权码粘贴到下方。
 					</p>
 					{authInstructions && (
 						<p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap">
@@ -972,11 +971,11 @@ function OAuthView({
 						</p>
 					)}
 					<div className="space-y-2">
-						<Label htmlFor="oauth-code">Authorization Code</Label>
+						<Label htmlFor="oauth-code">授权码</Label>
 						<Input
 							id="oauth-code"
 							type="text"
-							placeholder="Paste code here..."
+							placeholder="在这里粘贴授权码..."
 							value={code}
 							onChange={(e) => setCode(e.target.value)}
 							disabled={state.status === "loading"}
@@ -998,7 +997,7 @@ function OAuthView({
 							onClick={onBack}
 							disabled={state.status === "loading"}
 						>
-							Back
+							返回
 						</Button>
 					)}
 					<Button
@@ -1007,16 +1006,16 @@ function OAuthView({
 						onClick={onCancel}
 						disabled={state.status === "loading"}
 					>
-						Cancel
+						取消
 					</Button>
 					<Button type="submit" disabled={!code.trim() || state.status === "loading"}>
 						{state.status === "loading" ? (
 							<>
 								<Spinner className="size-4" />
-								Verifying...
+								正在验证...
 							</>
 						) : (
-							"Submit"
+							"提交"
 						)}
 					</Button>
 				</DialogFooter>
@@ -1030,7 +1029,7 @@ function OAuthView({
 			{state.status === "loading" && !authUrl ? (
 				<div className="flex items-center justify-center gap-2 py-6">
 					<Spinner className="size-4" />
-					<span className="text-sm text-muted-foreground">Starting authentication...</span>
+					<span className="text-sm text-muted-foreground">正在启动认证...</span>
 				</div>
 			) : state.status === "error" ? (
 				<>
@@ -1041,11 +1040,11 @@ function OAuthView({
 					<DialogFooter>
 						{onBack && (
 							<Button type="button" variant="ghost" onClick={onBack}>
-								Back
+								返回
 							</Button>
 						)}
 						<Button type="button" variant="outline" onClick={onCancel}>
-							Cancel
+							取消
 						</Button>
 					</DialogFooter>
 				</>
@@ -1055,7 +1054,7 @@ function OAuthView({
 						<Spinner className="size-5" />
 						{deviceCode && (
 							<div className="flex flex-col items-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-3">
-								<p className="text-xs text-muted-foreground">Enter this code in the browser</p>
+								<p className="text-xs text-muted-foreground">在浏览器中输入这个代码</p>
 								<div className="flex items-center gap-2">
 									<code className="rounded-md bg-background px-2.5 py-1.5 font-mono text-sm font-semibold tracking-[0.2em]">
 										{deviceCode}
@@ -1082,18 +1081,18 @@ function OAuthView({
 							</p>
 						)}
 						<p className="text-sm text-muted-foreground text-center">
-							Waiting for authentication to complete in your browser...
+							等待你在浏览器中完成认证...
 						</p>
 						{authUrl && (
 							<Button variant="link" size="sm" onClick={() => window.open(authUrl, "_blank")}>
 								<ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-								Open link again
+								重新打开链接
 							</Button>
 						)}
 					</div>
 					<DialogFooter>
 						<Button type="button" variant="outline" onClick={onCancel}>
-							Cancel
+							取消
 						</Button>
 					</DialogFooter>
 				</>
@@ -1139,11 +1138,11 @@ function ZenSetupView({
 					<ZapIcon className="mt-0.5 size-4 shrink-0 text-emerald-500" aria-hidden="true" />
 					<div className="space-y-0.5 text-sm">
 						<p className="font-medium text-emerald-700 dark:text-emerald-400">
-							{freeModelCount} free models included
+							包含 {freeModelCount} 个免费模型
 						</p>
 						<p className="text-xs text-muted-foreground">
-							You can start coding immediately. Add an API key to unlock {totalModelCount}+ premium
-							models from Claude, GPT, Gemini, and more.
+							你可以立即开始使用。添加 API Key 后可解锁来自 Claude、GPT、Gemini 等的
+							{totalModelCount}+ 高级模型。
 						</p>
 					</div>
 				</div>
@@ -1167,7 +1166,7 @@ function ZenSetupView({
 						className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
 					>
 						<SparklesIcon className="size-3" aria-hidden="true" />
-						Get an API key at opencode.ai/zen
+						在 opencode.ai/zen 获取 API Key
 						<ExternalLinkIcon className="size-2.5" aria-hidden="true" />
 					</a>
 				</div>
@@ -1182,16 +1181,16 @@ function ZenSetupView({
 
 			<DialogFooter className="mt-4">
 				<Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-					{apiKey.trim() ? "Cancel" : "Use free models"}
+					{apiKey.trim() ? "取消" : "使用免费模型"}
 				</Button>
 				<Button type="submit" disabled={!apiKey.trim() || isLoading}>
 					{isLoading ? (
 						<>
 							<Spinner className="size-4" />
-							Connecting...
+							正在连接...
 						</>
 					) : (
-						"Connect"
+						"连接"
 					)}
 				</Button>
 			</DialogFooter>
@@ -1204,13 +1203,13 @@ function SuccessView({ provider, onDone }: { provider: CatalogProvider; onDone: 
 		<>
 			<div className="flex flex-col items-center gap-3 py-6">
 				<CheckCircle2Icon className="size-8 text-green-500" aria-hidden="true" />
-				<p className="text-sm font-medium">Connected to {provider.name}</p>
+				<p className="text-sm font-medium">已连接 {provider.name}</p>
 				<p className="text-xs text-muted-foreground">
-					You can now use {provider.name} models in your conversations
+					现在可以在会话中使用 {provider.name} 的模型了
 				</p>
 			</div>
 			<DialogFooter>
-				<Button onClick={onDone}>Done</Button>
+				<Button onClick={onDone}>完成</Button>
 			</DialogFooter>
 		</>
 	)
@@ -1255,7 +1254,7 @@ async function pollForCompletion(
 	}
 
 	if (!isCancelled()) {
-		setState({ status: "error", message: "Authentication timed out. Please try again." })
+		setState({ status: "error", message: "认证超时，请重试。" })
 	}
 }
 

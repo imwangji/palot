@@ -17,16 +17,16 @@ export function NotFoundPage() {
 
 				{/* Title + message */}
 				<div className="text-center">
-					<h1 className="text-lg font-semibold text-foreground">Page not found</h1>
+					<h1 className="text-lg font-semibold text-foreground">页面不存在</h1>
 					<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-						The page you're looking for doesn't exist or has been moved.
+						你要访问的页面不存在，或者已经被移动。
 					</p>
 				</div>
 
 				{/* Actions */}
 				<div className="flex items-center justify-center">
 					<Button variant="outline" size="sm" onClick={() => router.navigate({ to: "/" })}>
-						Go home
+						回到首页
 					</Button>
 				</div>
 			</div>

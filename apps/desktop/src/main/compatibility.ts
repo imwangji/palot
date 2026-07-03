@@ -7,10 +7,9 @@
  */
 
 import { execFile } from "node:child_process"
-import { homedir } from "node:os"
-import path from "node:path"
 import { coerce, satisfies, valid } from "semver"
 import { createLogger } from "./logger"
+import { getAugmentedOpenCodePath, resolveOpenCodeCommand } from "./opencode-binary"
 
 const log = createLogger("compatibility")
 
@@ -20,9 +19,9 @@ const log = createLogger("compatibility")
 
 export const OPENCODE_COMPAT = {
 	/** Supported range -- versions that should work. Below this: hard block. */
-	supported: ">=1.2.0",
+	supported: ">=1.17.0",
 	/** Tested range -- versions actively tested against. Subset of supported. */
-	tested: "~1.2.0",
+	tested: "~1.17.0",
 	/** Known-broken versions. These are hard-blocked with a specific message. */
 	blocked: [] as string[],
 }
@@ -44,21 +43,15 @@ export interface OpenCodeCheckResult {
 // Binary detection
 // ============================================================
 
-/** Build the augmented PATH that includes ~/.opencode/bin. */
-function getAugmentedPath(): string {
-	const opencodeBinDir = path.join(homedir(), ".opencode", "bin")
-	const sep = process.platform === "win32" ? ";" : ":"
-	return `${opencodeBinDir}${sep}${process.env.PATH ?? ""}`
-}
-
 /** Run a command and return stdout, or null on failure. */
 function execAsync(
 	cmd: string,
 	args: string[],
 	env: Record<string, string | undefined>,
+	shell = false,
 ): Promise<string | null> {
 	return new Promise((resolve) => {
-		execFile(cmd, args, { env, timeout: 5000 }, (err, stdout) => {
+		execFile(cmd, args, { env, shell, timeout: 5000 }, (err, stdout) => {
 			if (err) {
 				resolve(null)
 				return
@@ -70,11 +63,12 @@ function execAsync(
 
 /** Try to find the opencode binary and get its version. */
 async function detectOpenCode(): Promise<{ version: string | null; path: string | null }> {
-	const augmentedPath = getAugmentedPath()
+	const augmentedPath = getAugmentedOpenCodePath()
 	const env = { ...process.env, PATH: augmentedPath }
+	const opencode = resolveOpenCodeCommand()
 
 	// Try `opencode --version` (the correct flag)
-	const versionOutput = await execAsync("opencode", ["--version"], env)
+	const versionOutput = await execAsync(opencode.command, ["--version"], env, opencode.shell)
 	if (versionOutput) {
 		// Parse version from output -- could be "v0.2.14", "opencode v0.2.14", or "local"
 		const match = versionOutput.match(/v?(\d+\.\d+\.\d+(?:-[a-zA-Z0-9.]+)?)/)
@@ -84,7 +78,7 @@ async function detectOpenCode(): Promise<{ version: string | null; path: string 
 		const whichCmd = process.platform === "win32" ? "where" : "which"
 		const binaryPath = await execAsync(whichCmd, ["opencode"], env)
 
-		return { version, path: binaryPath }
+		return { version, path: binaryPath ?? opencode.command }
 	}
 
 	// Fallback: check if the binary exists at all (might not support --version)

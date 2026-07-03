@@ -71,7 +71,7 @@ export function AddProjectDialog({ open, onOpenChange, onAdded }: AddProjectDial
 			setError(
 				err instanceof Error
 					? err.message
-					: "Failed to load project. Check that the path exists on the remote server.",
+					: "加载项目失败。请确认该路径存在于远程服务器上。",
 			)
 		} finally {
 			setLoading(false)
@@ -82,16 +82,17 @@ export function AddProjectDialog({ open, onOpenChange, onAdded }: AddProjectDial
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>Add Remote Project</DialogTitle>
+					<DialogTitle>添加远程项目</DialogTitle>
 					<DialogDescription>
-						Enter the absolute path to a project directory on{" "}
+						输入{" "}
 						<span className="font-medium text-foreground">{activeServer.name}</span>
+						{" "}上的项目绝对路径
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4 py-4">
 					<div className="space-y-2">
-						<Label htmlFor="remote-project-path">Directory Path</Label>
+						<Label htmlFor="remote-project-path">目录路径</Label>
 						<div className="relative">
 							<FolderOpenIcon
 								aria-hidden="true"
@@ -115,8 +116,7 @@ export function AddProjectDialog({ open, onOpenChange, onAdded }: AddProjectDial
 							/>
 						</div>
 						<p className="text-xs text-muted-foreground">
-							The path must exist on the remote server. Sessions and project data will be loaded
-							from this directory.
+							该路径必须存在于远程服务器上。会话和项目数据会从这个目录加载。
 						</p>
 					</div>
 
@@ -128,10 +128,10 @@ export function AddProjectDialog({ open, onOpenChange, onAdded }: AddProjectDial
 				</div>
 
 				<DialogFooter>
-					<DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+					<DialogClose render={<Button variant="outline" />}>取消</DialogClose>
 					<Button disabled={!remotePath.trim() || loading} onClick={handleAdd}>
 						{loading && <Loader2Icon aria-hidden="true" className="size-3.5 animate-spin" />}
-						Add Project
+						添加项目
 					</Button>
 				</DialogFooter>
 			</DialogContent>

@@ -84,10 +84,10 @@ const log = createLogger("provider-settings")
 
 /** Human-readable labels for source types */
 const SOURCE_LABELS: Record<string, string> = {
-	env: "Environment",
+	env: "环境变量",
 	api: "API Key",
 	custom: "OAuth",
-	config: "Config",
+	config: "配置文件",
 }
 
 /**
@@ -147,9 +147,9 @@ export function ProviderSettings() {
 				<ProviderSettingsHeader />
 				<div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
 					<AlertCircleIcon className="size-4 shrink-0" aria-hidden="true" />
-					<span>Failed to load providers: {error}</span>
+					<span>加载模型供应商失败：{error}</span>
 					<Button variant="outline" size="sm" className="ml-auto" onClick={reload}>
-						Retry
+						重试
 					</Button>
 				</div>
 			</div>
@@ -177,7 +177,7 @@ export function ProviderSettings() {
 			<ProviderSettingsHeader />
 
 			{connectedProviders.length > 0 && (
-				<SettingsSection title="Connected">
+				<SettingsSection title="已连接">
 					{connectedProviders.map((provider) => (
 						<ConnectedProviderRow
 							key={provider.id}
@@ -191,7 +191,7 @@ export function ProviderSettings() {
 			)}
 
 			{popularUnconnected.length > 0 && (
-				<SettingsSection title="Available">
+				<SettingsSection title="可用">
 					{popularUnconnected.map((provider) => (
 						<AvailableProviderRow
 							key={provider.id}
@@ -209,7 +209,7 @@ export function ProviderSettings() {
 					onClick={() => setCatalogOpen(true)}
 				>
 					<GridIcon className="size-4" aria-hidden="true" />
-					Browse all {allProviders.all.length} providers
+					浏览全部 {allProviders.all.length} 个供应商
 				</Button>
 			</div>
 
@@ -249,16 +249,16 @@ export function ProviderSettings() {
 function ProviderSettingsHeader() {
 	return (
 		<div>
-			<h2 className="text-xl font-semibold">Providers</h2>
+			<h2 className="text-xl font-semibold">模型供应商</h2>
 			<p className="text-sm text-muted-foreground mt-1">
-				Connect AI providers to use their models.{" "}
+				连接你的 sub2api 或其他模型供应商，开始使用对应模型。{" "}
 				<a
 					href="https://opencode.ai/docs/providers/"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="text-primary hover:underline"
 				>
-					Learn more &rsaquo;
+					了解更多 &rsaquo;
 				</a>
 			</p>
 		</div>
@@ -330,13 +330,13 @@ function ConnectedProviderRow({
 					{zenFree && (
 						<span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
 							<ZapIcon className="size-2" aria-hidden="true" />
-							Free
+							免费
 						</span>
 					)}
 				</div>
 				<div className="flex items-center gap-2">
 					<span className="text-xs text-muted-foreground">
-						{modelCount} {modelCount === 1 ? "model" : "models"}
+						{modelCount} 个模型
 					</span>
 					{zenFree && (
 						<>
@@ -347,7 +347,7 @@ function ConnectedProviderRow({
 								rel="noopener noreferrer"
 								className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
 							>
-								Upgrade
+								升级
 								<ExternalLinkIcon className="size-2.5" aria-hidden="true" />
 							</a>
 						</>
@@ -358,7 +358,7 @@ function ConnectedProviderRow({
 				<TooltipProvider>
 					{zenFree ? (
 						<Button variant="outline" size="sm" className="h-7 text-xs" onClick={onConnect}>
-							Add API key
+							添加 API Key
 						</Button>
 					) : (
 						<>
@@ -399,7 +399,7 @@ function ConnectedProviderRow({
 										<ExternalLinkIcon className="size-3.5" aria-hidden="true" />
 									</TooltipTrigger>
 									<TooltipContent>
-										<p>Manage keys on {new URL(keyUrl.url).hostname}</p>
+										<p>在 {new URL(keyUrl.url).hostname} 管理 Key</p>
 									</TooltipContent>
 								</Tooltip>
 							)}
@@ -420,7 +420,7 @@ function ConnectedProviderRow({
 										<UnlinkIcon className="size-4" aria-hidden="true" />
 									</TooltipTrigger>
 									<TooltipContent>
-										<p>Disconnect {provider.name}</p>
+										<p>断开 {provider.name}</p>
 									</TooltipContent>
 								</Tooltip>
 							)}
@@ -442,13 +442,13 @@ function SourceTooltip({
 	subscriptionLabel?: string
 }) {
 	if (subscriptionLabel) {
-		return <p>Connected via {subscriptionLabel} subscription</p>
+		return <p>通过 {subscriptionLabel} 订阅连接</p>
 	}
 	switch (source) {
 		case "env":
 			return (
 				<p>
-					Connected via environment variable
+					通过环境变量连接
 					{envVars.length > 0 && (
 						<>
 							{" "}
@@ -458,13 +458,13 @@ function SourceTooltip({
 				</p>
 			)
 		case "api":
-			return <p>Connected with an API key</p>
+			return <p>通过 API Key 连接</p>
 		case "custom":
-			return <p>Connected via OAuth</p>
+			return <p>通过 OAuth 连接</p>
 		case "config":
-			return <p>Configured in opencode.json</p>
+			return <p>在 opencode.json 中配置</p>
 		default:
-			return <p>Connected</p>
+			return <p>已连接</p>
 	}
 }
 
@@ -484,7 +484,7 @@ function AvailableProviderRow({
 			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<span className="text-sm font-medium">{provider.name}</span>
 				<span className="text-xs text-muted-foreground">
-					{modelCount} {modelCount === 1 ? "model" : "models"}
+					{modelCount} 个模型
 				</span>
 			</div>
 			<div className="flex items-center gap-2">
@@ -503,10 +503,10 @@ function AvailableProviderRow({
 					variant="outline"
 					size="sm"
 					onClick={onConnect}
-					aria-label={`Connect ${provider.name}`}
+					aria-label={`连接 ${provider.name}`}
 				>
 					<LinkIcon className="size-3.5" aria-hidden="true" />
-					Connect
+					连接
 				</Button>
 			</div>
 		</div>
@@ -561,9 +561,9 @@ function AllProvidersDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="flex h-[70vh] max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
 				<DialogHeader className="px-6 pt-6 pb-4">
-					<DialogTitle>All Providers</DialogTitle>
+					<DialogTitle>全部模型供应商</DialogTitle>
 					<DialogDescription>
-						{allProviders.length} providers available. Connect one to start using its models.
+						共有 {allProviders.length} 个可用供应商。连接后即可使用对应模型。
 					</DialogDescription>
 				</DialogHeader>
 
@@ -578,7 +578,7 @@ function AllProvidersDialog({
 							ref={searchRef}
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							placeholder="Search providers..."
+							placeholder="搜索供应商..."
 							className="h-8 border-0 bg-transparent pl-8 shadow-none focus-visible:ring-0"
 						/>
 					</div>
@@ -589,7 +589,7 @@ function AllProvidersDialog({
 					<div className="divide-y divide-border">
 						{filtered.length === 0 ? (
 							<div className="px-4 py-12 text-center text-sm text-muted-foreground">
-								No providers matching &ldquo;{search}&rdquo;
+								没有匹配 &ldquo;{search}&rdquo; 的供应商
 							</div>
 						) : (
 							filtered.map((provider) => (
@@ -631,12 +631,12 @@ function CatalogRow({
 
 	// Derive the connected label
 	const connectedLabel = isZen
-		? "Active"
+		? "已启用"
 		: isSubscription && subscriptionLabel
 			? subscriptionLabel
 			: source
 				? (SOURCE_LABELS[source] ?? "Connected")
-				: "Connected"
+				: "已连接"
 
 	// Derive available auth method summary for unconnected providers
 	const authSummary = getAuthSummary(authMethods, provider.env)
@@ -647,7 +647,7 @@ function CatalogRow({
 			<div className="flex min-w-0 flex-1 flex-col">
 				<span className="text-sm font-medium">{provider.name}</span>
 				<span className="text-xs text-muted-foreground">
-					{modelCount} {modelCount === 1 ? "model" : "models"}
+					{modelCount} 个模型
 					{authSummary && (
 						<>
 							<span className="mx-1.5 text-muted-foreground/30">&middot;</span>
@@ -667,9 +667,9 @@ function CatalogRow({
 					size="sm"
 					onClick={onConnect}
 					className="h-7 text-xs"
-					aria-label={`Connect ${provider.name}`}
+					aria-label={`连接 ${provider.name}`}
 				>
-					Connect
+					连接
 				</Button>
 			)}
 		</div>
@@ -684,7 +684,7 @@ function ProviderSettingsLoading() {
 	return (
 		<div className="space-y-8">
 			<ProviderSettingsHeader />
-			<SettingsSection title="Connected">
+			<SettingsSection title="已连接">
 				{[1, 2].map((i) => (
 					<div key={i} className="flex items-center gap-3 px-4 py-3">
 						<Skeleton className="size-8 rounded-md" />

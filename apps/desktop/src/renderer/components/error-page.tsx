@@ -7,7 +7,7 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
 	const router = useRouter()
 	const [showDetails, setShowDetails] = useState(false)
 
-	const message = error instanceof Error ? error.message : "An unexpected error occurred"
+	const message = error instanceof Error ? error.message : "发生了未知错误"
 	const stack = error instanceof Error ? error.stack : undefined
 
 	return (
@@ -22,7 +22,7 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
 
 				{/* Title + message */}
 				<div className="text-center">
-					<h1 className="text-lg font-semibold text-foreground">Something went wrong</h1>
+					<h1 className="text-lg font-semibold text-foreground">出错了</h1>
 					<p className="mt-2 text-sm leading-relaxed text-muted-foreground">{message}</p>
 				</div>
 
@@ -37,10 +37,10 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
 						}}
 					>
 						<RefreshCwIcon />
-						Try again
+						重试
 					</Button>
 					<Button variant="ghost" size="sm" onClick={() => router.navigate({ to: "/" })}>
-						Go home
+						回到首页
 					</Button>
 				</div>
 
@@ -55,7 +55,7 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
 							<ChevronDownIcon
 								className={`size-3 transition-transform ${showDetails ? "rotate-180" : ""}`}
 							/>
-							{showDetails ? "Hide" : "Show"} details
+							{showDetails ? "隐藏" : "查看"}详情
 						</button>
 
 						{showDetails && (

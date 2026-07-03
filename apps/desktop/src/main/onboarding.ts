@@ -8,7 +8,6 @@
  *   Supported providers: Claude Code, Cursor, OpenCode
  */
 
-import { type ChildProcess, spawn } from "node:child_process"
 import { existsSync } from "node:fs"
 import { homedir } from "node:os"
 import path from "node:path"
@@ -117,7 +116,7 @@ export async function checkOpenCodeInstallation(): Promise<OpenCodeCheckResult> 
 // OpenCode install
 // ============================================================
 
-let installProcess: ChildProcess | null = null
+let installProcess = false
 
 /**
  * Installs OpenCode CLI by running the official install script.
@@ -126,69 +125,16 @@ let installProcess: ChildProcess | null = null
  */
 export async function installOpenCode(): Promise<{ success: boolean; error?: string }> {
 	if (installProcess) {
-		return { success: false, error: "Installation already in progress" }
+		return { success: false, error: "安装已在进行中" }
 	}
 
-	return new Promise((resolve) => {
-		const isWindows = process.platform === "win32"
-
-		if (isWindows) {
-			// Windows: use PowerShell to run the install script
-			installProcess = spawn(
-				"powershell",
-				["-Command", "irm https://opencode.ai/install.ps1 | iex"],
-				{
-					cwd: homedir(),
-					stdio: "pipe",
-					env: process.env,
-				},
-			)
-		} else {
-			// macOS/Linux: use bash + curl
-			installProcess = spawn("bash", ["-c", "curl -fsSL https://opencode.ai/install | bash"], {
-				cwd: homedir(),
-				stdio: "pipe",
-				env: process.env,
-			})
-		}
-
-		const proc = installProcess
-
-		const sendOutput = (text: string) => {
-			for (const win of BrowserWindow.getAllWindows()) {
-				win.webContents.send("onboarding:install-output", text)
-			}
-		}
-
-		proc.stdout?.on("data", (data: Buffer) => {
-			const text = data.toString()
-			sendOutput(text)
-			log.debug(`[install:stdout] ${text.trim()}`)
-		})
-
-		proc.stderr?.on("data", (data: Buffer) => {
-			const text = data.toString()
-			sendOutput(text)
-			log.debug(`[install:stderr] ${text.trim()}`)
-		})
-
-		proc.on("error", (err) => {
-			log.error("Install process error", err)
-			installProcess = null
-			resolve({ success: false, error: err.message })
-		})
-
-		proc.on("exit", (code) => {
-			installProcess = null
-			if (code === 0) {
-				log.info("OpenCode install completed successfully")
-				resolve({ success: true })
-			} else {
-				log.warn("OpenCode install exited with code", code)
-				resolve({ success: false, error: `Install script exited with code ${code}` })
-			}
-		})
-	})
+	installProcess = true
+	log.warn("OpenCode install requested, but this build expects a bundled OpenCode runtime")
+	installProcess = false
+	return {
+		success: false,
+		error: "当前版本已内置 OpenCode，无需单独安装。请重新安装最新版客户端。",
+	}
 }
 
 // ============================================================

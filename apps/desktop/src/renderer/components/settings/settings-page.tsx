@@ -34,13 +34,13 @@ type SettingsTab =
 	| "about"
 
 const tabs: { id: SettingsTab; label: string; icon: typeof SettingsIcon }[] = [
-	{ id: "general", label: "General", icon: SettingsIcon },
-	{ id: "servers", label: "Servers", icon: ServerIcon },
-	{ id: "notifications", label: "Notifications", icon: BellIcon },
-	{ id: "providers", label: "Providers", icon: PlugIcon },
-	{ id: "worktrees", label: "Worktrees", icon: GitForkIcon },
-	{ id: "setup", label: "Setup", icon: WrenchIcon },
-	{ id: "about", label: "About", icon: InfoIcon },
+	{ id: "general", label: "通用", icon: SettingsIcon },
+	{ id: "servers", label: "服务器", icon: ServerIcon },
+	{ id: "notifications", label: "通知", icon: BellIcon },
+	{ id: "providers", label: "模型供应商", icon: PlugIcon },
+	{ id: "worktrees", label: "隔离工作区", icon: GitForkIcon },
+	{ id: "setup", label: "初始化", icon: WrenchIcon },
+	{ id: "about", label: "关于", icon: InfoIcon },
 ]
 
 // ============================================================
@@ -90,7 +90,7 @@ function SettingsSidebarContent() {
 							className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
 						>
 							<ArrowLeftIcon aria-hidden="true" className="size-4" />
-							Back to app
+							返回应用
 						</button>
 					</div>
 					<SidebarMenu>

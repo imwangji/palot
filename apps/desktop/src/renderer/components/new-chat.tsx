@@ -84,9 +84,9 @@ function WorktreeToggle({
 					}
 				>
 					<MonitorIcon className="size-3" />
-					<span>Local</span>
+					<span>本地</span>
 				</TooltipTrigger>
-				<TooltipContent side="top">Run in your current working directory</TooltipContent>
+				<TooltipContent side="top">在当前工作目录中运行</TooltipContent>
 			</Tooltip>
 			<Tooltip>
 				<TooltipTrigger
@@ -103,10 +103,10 @@ function WorktreeToggle({
 					}
 				>
 					<GitForkIcon className="size-3" />
-					<span>Worktree</span>
+					<span>工作区</span>
 				</TooltipTrigger>
 				<TooltipContent side="top">
-					Run in an isolated git worktree (your working copy stays untouched)
+					在隔离的 git worktree 中运行，当前工作目录不会被直接改动
 				</TooltipContent>
 			</Tooltip>
 		</div>
@@ -171,15 +171,15 @@ function MentionTrigger({
 const SUGGESTIONS = [
 	{
 		icon: CodeIcon,
-		text: "Build a new feature based on the existing patterns in this repo.",
+		text: "根据这个仓库现有的代码风格实现一个新功能。",
 	},
 	{
 		icon: FileTextIcon,
-		text: "Summarize the architecture and key design decisions.",
+		text: "总结这个项目的架构和关键设计决策。",
 	},
 	{
 		icon: GitPullRequestIcon,
-		text: "Review recent changes and suggest improvements.",
+		text: "审查最近的改动并给出改进建议。",
 	},
 ]
 
@@ -486,7 +486,7 @@ export function NewChat() {
 					slug: sessionSlug,
 					projectID: "",
 					directory: selectedDirectory,
-					title: "Setting up worktree...",
+					title: "正在准备隔离工作区...",
 					version: "",
 					time: { created: now, updated: now },
 				},
@@ -516,7 +516,7 @@ export function NewChat() {
 					})
 					const session = await createSession(sdkDirectory)
 					if (!session) {
-						throw new Error("Failed to create session in worktree")
+						throw new Error("无法在隔离工作区中创建会话")
 					}
 
 					// Replace the stub with the real session data. Override the
@@ -550,7 +550,7 @@ export function NewChat() {
 					console.error("Worktree launch failed:", err)
 					// Remove the stub and navigate back to new chat
 					appStore.set(removeSessionAtom, stubId)
-					setError(`Worktree setup failed: ${err instanceof Error ? err.message : "Unknown error"}`)
+					setError(`隔离工作区准备失败：${err instanceof Error ? err.message : "未知错误"}`)
 					navigate({ to: "/" })
 				}
 			}
@@ -586,7 +586,7 @@ export function NewChat() {
 					await launchLocal(promptText, files)
 				}
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to create session")
+				setError(err instanceof Error ? err.message : "创建会话失败")
 			} finally {
 				setLaunching(false)
 			}
@@ -608,7 +608,7 @@ export function NewChat() {
 
 					{/* "Build what's next" + project name */}
 					<div className="text-center">
-						<h1 className="text-2xl font-semibold text-foreground">Build what's next</h1>
+						<h1 className="text-2xl font-semibold text-foreground">今天想让 Agent 做什么？</h1>
 						{projects.length > 1 ? (
 							<Popover open={projectPickerOpen} onOpenChange={setProjectPickerOpen}>
 								<PopoverTrigger
@@ -619,7 +619,7 @@ export function NewChat() {
 										/>
 									}
 								>
-									{selectedProject?.name ?? "select project"}
+									{selectedProject?.name ?? "选择项目"}
 									<ChevronDownIcon className="size-4" />
 								</PopoverTrigger>
 								<PopoverContent className="w-64 p-1" align="center">
@@ -714,7 +714,7 @@ export function NewChat() {
 								supportsPdf={modelCapabilities?.pdf}
 							/>
 							<PromptInputTextarea
-								placeholder="What should this session work on?"
+								placeholder="描述你想让 Agent 完成的任务..."
 								autoFocus
 								disabled={launching || !selectedDirectory || projects.length === 0}
 								className="min-h-[80px]"
@@ -778,7 +778,7 @@ export function NewChat() {
 					{/* No projects warning */}
 					{projects.length === 0 && (
 						<p className="mt-2 text-center text-xs text-muted-foreground">
-							No projects found. Check that projects exist in ~/.local/share/opencode/storage/.
+							还没有发现项目。请先添加一个项目目录。
 						</p>
 					)}
 				</div>

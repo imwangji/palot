@@ -182,15 +182,15 @@ export function AppSidebarContent({
 						<div className="space-y-2 text-center">
 							{!serverConnected ? (
 								<>
-									<p className="text-sm text-muted-foreground">Server offline</p>
+									<p className="text-sm text-muted-foreground">服务器离线</p>
 									<p className="text-xs text-muted-foreground/60">
-										Check your connection in Settings
+										请在设置中检查连接
 									</p>
 								</>
 							) : (
 								<>
-									<p className="text-sm text-muted-foreground">No projects yet</p>
-									<p className="text-xs text-muted-foreground/60">Add a project to get started</p>
+									<p className="text-sm text-muted-foreground">还没有项目</p>
+									<p className="text-xs text-muted-foreground/60">添加一个项目开始使用</p>
 								</>
 							)}
 						</div>
@@ -203,23 +203,23 @@ export function AppSidebarContent({
 					<SidebarMenu>
 						<SidebarMenuItem>
 							<SidebarMenuButton
-								tooltip="New Session"
+								tooltip="新会话"
 								onClick={() => navigate({ to: "/" })}
 								className="text-muted-foreground"
 							>
 								<PlusIcon className="size-4" />
-								<span>New Session</span>
+								<span>新会话</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 						{automationsEnabled && isLocalServer && (
 							<SidebarMenuItem>
 								<SidebarMenuButton
-									tooltip="Automations"
+									tooltip="自动任务"
 									onClick={() => navigate({ to: "/automations" })}
 									className="text-muted-foreground"
 								>
 									<BotIcon className="size-4" />
-									<span>Automations</span>
+									<span>自动任务</span>
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						)}
@@ -230,7 +230,7 @@ export function AppSidebarContent({
 				{/* Active Now */}
 				{activeSessions.length > 0 && (
 					<SidebarGroup>
-						<SidebarGroupLabel>Active Now</SidebarGroupLabel>
+						<SidebarGroupLabel>正在进行</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu>
 							{activeSessions.map((agent) => (
@@ -252,7 +252,7 @@ export function AppSidebarContent({
 				{/* Recent */}
 				{recentSessions.length > 0 && (
 					<SidebarGroup>
-						<SidebarGroupLabel>Recent</SidebarGroupLabel>
+						<SidebarGroupLabel>最近会话</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu>
 							{recentSessions.map((agent) => (
@@ -277,7 +277,7 @@ export function AppSidebarContent({
 				)}
 				{hasContent && (
 					<SidebarGroup>
-						<SidebarGroupLabel>Projects</SidebarGroupLabel>
+						<SidebarGroupLabel>项目</SidebarGroupLabel>
 						{/* Action buttons row */}
 						<div className="absolute top-3.5 right-3 flex max-w-[calc(100%-4rem)] items-center gap-0.5 overflow-hidden">
 							<Tooltip>
@@ -299,10 +299,10 @@ export function AppSidebarContent({
 									) : (
 										<SearchIcon className="size-4 shrink-0" />
 									)}
-									<span className="sr-only">Search projects</span>
+									<span className="sr-only">搜索项目</span>
 								</TooltipTrigger>
 								<TooltipContent side="bottom">
-									{projectSearchActive ? "Close search" : "Search projects"}
+									{projectSearchActive ? "关闭搜索" : "搜索项目"}
 								</TooltipContent>
 							</Tooltip>
 							<Tooltip>
@@ -316,9 +316,9 @@ export function AppSidebarContent({
 									}
 								>
 									<CommandIcon className="size-4 shrink-0" />
-									<span className="sr-only">Command palette</span>
+									<span className="sr-only">命令面板</span>
 								</TooltipTrigger>
-								<TooltipContent side="bottom">Command palette (&#8984;K)</TooltipContent>
+								<TooltipContent side="bottom">命令面板 (&#8984;K)</TooltipContent>
 							</Tooltip>
 							{onAddProject && (
 								<Tooltip>
@@ -332,9 +332,9 @@ export function AppSidebarContent({
 										}
 									>
 										<PlusIcon className="size-4 shrink-0" />
-										<span className="sr-only">Add Project</span>
+										<span className="sr-only">添加项目</span>
 									</TooltipTrigger>
-									<TooltipContent side="bottom">Add project</TooltipContent>
+									<TooltipContent side="bottom">添加项目</TooltipContent>
 								</Tooltip>
 							)}
 						</div>
@@ -351,7 +351,7 @@ export function AppSidebarContent({
 											toggleProjectSearch()
 										}
 									}}
-									placeholder="Filter projects..."
+									placeholder="筛选项目..."
 									className="h-7 text-xs"
 								/>
 							</div>
@@ -371,7 +371,7 @@ export function AppSidebarContent({
 							))}
 								{projectSearch && filteredProjects.length === 0 && (
 									<p className="px-2 py-1.5 text-xs text-muted-foreground/60">
-										No projects match &ldquo;{projectSearch}&rdquo;
+										没有匹配 &ldquo;{projectSearch}&rdquo; 的项目
 									</p>
 								)}
 							</SidebarMenu>
@@ -384,12 +384,12 @@ export function AppSidebarContent({
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton
-							tooltip="Settings"
+							tooltip="设置"
 							onClick={() => navigate({ to: "/settings" })}
 							className="text-muted-foreground"
 						>
 							<SettingsIcon className="size-4" />
-							<span>Settings</span>
+							<span>设置</span>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>
@@ -529,10 +529,10 @@ const ProjectFolder = memo(function ProjectFolder({
 						{isLoading && projectSessions.length === 0 ? (
 							<p className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground/60">
 								<Loader2Icon className="size-3 animate-spin" />
-								Loading sessions...
+								正在加载会话...
 							</p>
 						) : pagination.loaded && projectSessions.length === 0 ? (
-							<p className="px-2 py-1.5 text-xs text-muted-foreground/60">No sessions yet</p>
+							<p className="px-2 py-1.5 text-xs text-muted-foreground/60">还没有会话</p>
 						) : (
 							<SidebarMenu>
 							{projectSessions.map((agent) => (
@@ -555,12 +555,12 @@ const ProjectFolder = memo(function ProjectFolder({
 										{pagination.loading ? (
 											<span className="flex items-center gap-1">
 												<Loader2Icon className="size-3 animate-spin" />
-												Loading...
+												正在加载...
 											</span>
 										) : (
 											<span className="flex items-center gap-1">
 												<ChevronDownIcon className="size-3" />
-												Load more sessions
+												加载更多会话
 											</span>
 										)}
 									</button>
@@ -595,8 +595,8 @@ function useLiveLastActive(agent: Agent): string {
 		}
 
 		// Active sessions: show "now" and tick every 60s to stay fresh
-		setDisplay("now")
-		const id = setInterval(() => setDisplay("now"), 60_000)
+		setDisplay("刚刚")
+		const id = setInterval(() => setDisplay("刚刚"), 60_000)
 		return () => clearInterval(id)
 	}, [isActive, agent.duration])
 
@@ -727,20 +727,20 @@ const SessionItem = memo(function SessionItem({
 				{onRename && (
 					<ContextMenuItem onSelect={startEditing}>
 						<PencilIcon className="size-4" />
-						Rename
+						重命名
 					</ContextMenuItem>
 				)}
 				{onFork && (
 					<ContextMenuItem onSelect={() => onFork(agent)}>
 						<GitForkIcon className="size-4" />
-						Fork
+						创建分支工作区
 					</ContextMenuItem>
 				)}
 				{(onRename || onFork) && onDelete && <ContextMenuSeparator />}
 				{onDelete && (
 					<ContextMenuItem variant="destructive" onSelect={() => onDelete(agent)}>
 						<TrashIcon className="size-4" />
-						Delete
+						删除
 					</ContextMenuItem>
 				)}
 			</ContextMenuContent>

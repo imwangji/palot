@@ -28,13 +28,13 @@ const FADE_DURATION_MS = 400
 
 /** Human-readable status messages for each discovery phase. */
 const PHASE_LABELS: Record<DiscoveryPhase, string> = {
-	idle: "Initializing...",
-	"starting-server": "Starting server...",
-	connecting: "Connecting...",
-	"loading-projects": "Loading projects...",
-	"loading-sessions": "Loading sessions...",
+	idle: "正在初始化...",
+	"starting-server": "正在启动本地 Agent...",
+	connecting: "正在连接...",
+	"loading-projects": "正在加载项目...",
+	"loading-sessions": "正在加载会话...",
 	ready: "",
-	error: "Connection failed",
+	error: "连接失败",
 }
 
 // ============================================================

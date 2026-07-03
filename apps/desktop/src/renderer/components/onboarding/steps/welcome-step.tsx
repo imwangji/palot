@@ -23,20 +23,20 @@ export function WelcomeStep({ onContinue }: WelcomeStepProps) {
 
 				{/* Description */}
 				<div className="space-y-3">
-					<p className="text-lg text-muted-foreground">Your desktop companion for OpenCode.</p>
+					<p className="text-lg text-muted-foreground">你的桌面 AI 编程助手。</p>
 					<p className="text-sm leading-relaxed text-muted-foreground/70">
-						Palot gives you a native experience for managing OpenCode sessions across all your
-						projects, with real-time streaming, native notifications, and multi-session support.
+						内置本地 Agent 引擎，接入你的 sub2api 账号和模型网关，支持实时输出、
+						多会话和项目级工作流。
 					</p>
 				</div>
 
 				{/* CTA */}
 				<div className="space-y-3">
 					<Button size="lg" onClick={onContinue} className="gap-2">
-						Get Started
+						开始使用
 						<ArrowRightIcon aria-hidden="true" className="size-4" />
 					</Button>
-					<p className="text-xs text-muted-foreground/50">This takes less than a minute.</p>
+					<p className="text-xs text-muted-foreground/50">初始化只需要不到一分钟。</p>
 				</div>
 			</div>
 		</div>

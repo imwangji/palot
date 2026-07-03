@@ -16,6 +16,10 @@ files:
 # Linux: resources/bin/palot
 # Windows: resources/bin/palot.cmd
 extraResources:
+  - from: ../../node_modules/opencode-ai/bin
+    to: opencode
+    filter:
+      - "**/*"
   - from: resources/bin
     to: bin
     filter:
@@ -56,9 +60,10 @@ mac:
 
 win:
   icon: resources/icon.ico
+  signAndEditExecutable: false
   target:
     - target: nsis
-      arch: [x64, arm64]
+      arch: [x64]
 
 linux:
   executableName: palot
