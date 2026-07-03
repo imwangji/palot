@@ -1,4 +1,5 @@
 import { type ChildProcess, spawn } from "node:child_process"
+import { existsSync } from "node:fs"
 import { homedir } from "node:os"
 import path from "node:path"
 import { setTimeout as sleep } from "node:timers/promises"
@@ -42,6 +43,29 @@ let singleServer: {
 
 const DEFAULT_PORT = 4101
 const DEFAULT_HOSTNAME = "127.0.0.1"
+
+function getOpenCodeBinDirs(): string[] {
+	const dirs = [path.join(homedir(), ".opencode", "bin")]
+	if (process.platform === "win32" && process.env.APPDATA) {
+		dirs.push(path.join(process.env.APPDATA, "npm"))
+	}
+	return dirs
+}
+
+function resolveOpenCodeCommand(): { command: string; shell: boolean } {
+	if (process.platform !== "win32") {
+		return { command: "opencode", shell: false }
+	}
+
+	for (const dir of getOpenCodeBinDirs()) {
+		const cmdPath = path.join(dir, "opencode.cmd")
+		if (existsSync(cmdPath)) {
+			return { command: cmdPath, shell: true }
+		}
+	}
+
+	return { command: "opencode.cmd", shell: true }
+}
 
 // ============================================================
 // Public API
@@ -305,9 +329,9 @@ async function spawnServer(
 	config: LocalServerConfig,
 ): Promise<OpenCodeServer> {
 	// Build PATH with ~/.opencode/bin prepended so we find the opencode binary
-	const opencodeBinDir = path.join(homedir(), ".opencode", "bin")
+	const opencodeBinDirs = getOpenCodeBinDirs()
 	const sep = process.platform === "win32" ? ";" : ":"
-	const augmentedPath = `${opencodeBinDir}${sep}${process.env.PATH ?? ""}`
+	const augmentedPath = `${opencodeBinDirs.join(sep)}${sep}${process.env.PATH ?? ""}`
 
 	// Build CLI args
 	const args = ["serve", `--hostname=${hostname}`, `--port=${port}`]
@@ -333,13 +357,15 @@ async function spawnServer(
 		port,
 		hasPassword: !!config.hasPassword,
 		mdns: !!config.mdns,
-		binDir: opencodeBinDir,
+		binDirs: opencodeBinDirs,
 	})
 
-	const proc = spawn("opencode", args, {
+	const opencode = resolveOpenCodeCommand()
+	const proc = spawn(opencode.command, args, {
 		cwd: homedir(),
 		stdio: "pipe",
 		env: { ...process.env, PATH: augmentedPath },
+		shell: opencode.shell,
 	})
 
 	const url = `http://${hostname}:${port}`
