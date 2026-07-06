@@ -16,6 +16,7 @@ import { getBaseClient } from "../../services/connection-manager"
 
 const SUB2API_BASE_URL = "https://sub2api.bywangji.com"
 const SUB2API_OPENAI_BASE_URL = `${SUB2API_BASE_URL}/v1`
+const CODEY_DEFAULT_GROUP_NAME = "codex-0.25"
 
 type Mode = "login" | "register" | "two-factor"
 
@@ -47,11 +48,19 @@ interface ApiKeyData {
 	id: number
 	key: string
 	name: string
+	group_id?: number | null
 	status?: string
+	group?: Sub2ApiGroup | null
 }
 
 interface PaginatedKeys {
 	items?: ApiKeyData[]
+}
+
+interface Sub2ApiGroup {
+	id: number
+	name: string
+	status?: string
 }
 
 interface Sub2ApiAuthDialogProps {
@@ -61,9 +70,14 @@ interface Sub2ApiAuthDialogProps {
 }
 
 function getDeviceId(): string {
-	const key = "wangji-desktop-device-id"
+	const key = "codey-desktop-device-id"
 	const existing = localStorage.getItem(key)
 	if (existing) return existing
+	const legacy = localStorage.getItem("wangji-desktop-device-id")
+	if (legacy) {
+		localStorage.setItem(key, legacy)
+		return legacy
+	}
 	const id = crypto.randomUUID()
 	localStorage.setItem(key, id)
 	return id
@@ -88,7 +102,7 @@ async function sub2apiRequest<T>(
 	const text = res.body ?? ""
 	const payload = text ? (JSON.parse(text) as Sub2ApiEnvelope<T>) : undefined
 	if (res.status < 200 || res.status >= 300 || !payload || payload.code !== 0) {
-		throw new Error(payload?.message || `è¯·æ±‚å¤±è´¥ï¼šHTTP ${res.status}`)
+		throw new Error(payload?.message || `ÇëÇóÊ§°Ü£ºHTTP ${res.status}`)
 	}
 	return payload.data as T
 }
@@ -105,12 +119,25 @@ async function sub2apiRequestWithFallback<T>(
 			lastError = err
 		}
 	}
-	throw lastError instanceof Error ? lastError : new Error("è¯·æ±‚å¤±è´¥")
+	throw lastError instanceof Error ? lastError : new Error("ÇëÇóÊ§°Ü")
+}
+
+async function getDefaultGroupID(token: string): Promise<number> {
+	const groups = await sub2apiRequest<Sub2ApiGroup[]>("/api/v1/groups/available", { token })
+	const group = groups.find(
+		(item) => item.name === CODEY_DEFAULT_GROUP_NAME && item.status !== "inactive",
+	)
+	if (!group) {
+		throw new Error(
+			`${CODEY_DEFAULT_GROUP_NAME} ·şÎñ×éÔİÊ±²»¿ÉÓÃ£¬ÇëÁªÏµ¹ÜÀíÔ±È·ÈÏÕËºÅ·Ö×éÈ¨ÏŞ¡£`,
+		)
+	}
+	return group.id
 }
 
 async function configureOpenAIProvider(apiKey: string): Promise<void> {
 	const client = getBaseClient()
-	if (!client) throw new Error("æœ¬åœ° Agent æœåŠ¡å°šæœªè¿æ¥ï¼Œè¯·ç¨åé‡è¯•ã€‚")
+	if (!client) throw new Error("±¾µØ Agent ·şÎñÉĞÎ´Á¬½Ó£¬ÇëÉÔºóÖØÊÔ¡£")
 
 	await client.auth.set({
 		providerID: "openai",
@@ -146,9 +173,9 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 	const [success, setSuccess] = useState<string | null>(null)
 
 	const title = useMemo(() => {
-		if (mode === "register") return "æ³¨å†Œæ—ºè®°è´¦å·"
-		if (mode === "two-factor") return "ä¸¤æ­¥éªŒè¯"
-		return "ç™»å½•æ—ºè®°è´¦å·"
+		if (mode === "register") return "×¢²á Codey ÕËºÅ"
+		if (mode === "two-factor") return "Á½²½ÑéÖ¤"
+		return "µÇÂ¼ Codey ÕËºÅ"
 	}, [mode])
 
 	const resetResult = useCallback(() => {
@@ -165,28 +192,34 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 				return
 			}
 			if (!auth.access_token) {
-				throw new Error("ç™»å½•æˆåŠŸä½†æ²¡æœ‰è¿”å›è®¿é—®ä»¤ç‰Œã€‚")
+				throw new Error("µÇÂ¼³É¹¦µ«Ã»ÓĞ·µ»Ø·ÃÎÊÁîÅÆ¡£")
 			}
 
+			const groupID = await getDefaultGroupID(auth.access_token)
 			const deviceId = getDeviceId()
-			const keyName = `Desktop Agent - ${deviceId}`
+			const keyName = `Codey Desktop - ${deviceId}`
 			const list = await sub2apiRequestWithFallback<PaginatedKeys>(
 				["/api/v1/keys?page=1&page_size=100", "/api/v1/api-keys?page=1&page_size=100"],
 				{ token: auth.access_token },
 			)
-			const existing = list.items?.find((item) => item.name === keyName && item.status !== "inactive")
+			const existing = list.items?.find(
+				(item) =>
+					item.name === keyName &&
+					item.status !== "inactive" &&
+					(item.group_id === groupID || item.group?.id === groupID),
+			)
 			const apiKey =
 				existing?.key ??
 				(
 					await sub2apiRequestWithFallback<ApiKeyData>(["/api/v1/keys", "/api/v1/api-keys"], {
 						method: "POST",
 						token: auth.access_token,
-						body: { name: keyName },
+						body: { name: keyName, group_id: groupID },
 					})
 				).key
 
 			await configureOpenAIProvider(apiKey)
-			setSuccess("è´¦å·å·²è¿æ¥ï¼Œæ¨¡å‹ç½‘å…³å·²è‡ªåŠ¨é…ç½®å®Œæˆã€‚")
+			setSuccess("ÕËºÅÒÑÁ¬½Ó£¬Codey ÒÑ×Ô¶¯ÅäÖÃ×¨ÓÃÄ£ĞÍÍø¹Ø¡£")
 			onConnected()
 		},
 		[onConnected],
@@ -202,7 +235,7 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 			})
 			await completeWithToken(auth)
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "ç™»å½•å¤±è´¥")
+			setError(err instanceof Error ? err.message : "µÇÂ¼Ê§°Ü")
 		} finally {
 			setLoading(false)
 		}
@@ -224,7 +257,7 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 			})
 			await completeWithToken(auth)
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "æ³¨å†Œå¤±è´¥")
+			setError(err instanceof Error ? err.message : "×¢²áÊ§°Ü")
 		} finally {
 			setLoading(false)
 		}
@@ -240,7 +273,7 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 			})
 			await completeWithToken(auth)
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "éªŒè¯å¤±è´¥")
+			setError(err instanceof Error ? err.message : "ÑéÖ¤Ê§°Ü")
 		} finally {
 			setLoading(false)
 		}
@@ -254,9 +287,9 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 				method: "POST",
 				body: { email: email.trim() },
 			})
-			setSuccess("éªŒè¯ç å·²å‘é€ï¼Œè¯·æŸ¥çœ‹é‚®ç®±ã€‚")
+			setSuccess("ÑéÖ¤ÂëÒÑ·¢ËÍ£¬Çë²é¿´ÓÊÏä¡£")
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "å‘é€éªŒè¯ç å¤±è´¥")
+			setError(err instanceof Error ? err.message : "·¢ËÍÑéÖ¤ÂëÊ§°Ü")
 		} finally {
 			setSendingCode(false)
 		}
@@ -271,7 +304,7 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>
-						ä½¿ç”¨ sub2api.bywangji.com è´¦å·ç™»å½•ï¼Œå®¢æˆ·ç«¯ä¼šè‡ªåŠ¨åˆ›å»ºæˆ–å¤ç”¨æœ¬è®¾å¤‡ä¸“ç”¨ API Keyã€‚
+						µÇÂ¼ºó»á×Ô¶¯´´½¨»ò¸´ÓÃ±¾Éè±¸×¨ÓÃÆ¾Ö¤£¬²¢°ó¶¨ codex-0.25 ·şÎñ×é¡£
 					</DialogDescription>
 				</DialogHeader>
 
@@ -279,7 +312,7 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 					{mode !== "two-factor" ? (
 						<>
 							<div className="space-y-2">
-								<Label htmlFor="sub2api-email">é‚®ç®±</Label>
+								<Label htmlFor="sub2api-email">ÓÊÏä</Label>
 								<Input
 									id="sub2api-email"
 									type="email"
@@ -290,13 +323,13 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="sub2api-password">å¯†ç </Label>
+								<Label htmlFor="sub2api-password">ÃÜÂë</Label>
 								<Input
 									id="sub2api-password"
 									type="password"
 									value={password}
 									onChange={(event) => setPassword(event.target.value)}
-									placeholder="è¯·è¾“å…¥å¯†ç "
+									placeholder="ÇëÊäÈëÃÜÂë"
 									disabled={loading}
 								/>
 							</div>
@@ -304,13 +337,13 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 							{mode === "register" && (
 								<>
 									<div className="space-y-2">
-										<Label htmlFor="sub2api-verify-code">é‚®ç®±éªŒè¯ç </Label>
+										<Label htmlFor="sub2api-verify-code">ÓÊÏäÑéÖ¤Âë</Label>
 										<div className="flex gap-2">
 											<Input
 												id="sub2api-verify-code"
 												value={verifyCode}
 												onChange={(event) => setVerifyCode(event.target.value)}
-												placeholder="å¯é€‰ï¼ŒæŒ‰ç«™ç‚¹é…ç½®å¡«å†™"
+												placeholder="¿ÉÑ¡£¬°´Õ¾µãÅäÖÃÌîĞ´"
 												disabled={loading}
 											/>
 											<Button
@@ -320,28 +353,28 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 												disabled={sendingCode || !email.trim()}
 											>
 												{sendingCode && <Spinner className="size-4" />}
-												å‘é€
+												·¢ËÍ
 											</Button>
 										</div>
 									</div>
 									<div className="grid grid-cols-2 gap-2">
 										<div className="space-y-2">
-											<Label htmlFor="sub2api-promo">ä¼˜æƒ ç </Label>
+											<Label htmlFor="sub2api-promo">ÓÅ»İÂë</Label>
 											<Input
 												id="sub2api-promo"
 												value={promoCode}
 												onChange={(event) => setPromoCode(event.target.value)}
-												placeholder="å¯é€‰"
+												placeholder="¿ÉÑ¡"
 												disabled={loading}
 											/>
 										</div>
 										<div className="space-y-2">
-											<Label htmlFor="sub2api-invite">é‚€è¯·ç </Label>
+											<Label htmlFor="sub2api-invite">ÑûÇëÂë</Label>
 											<Input
 												id="sub2api-invite"
 												value={invitationCode}
 												onChange={(event) => setInvitationCode(event.target.value)}
-												placeholder="å¯é€‰"
+												placeholder="¿ÉÑ¡"
 												disabled={loading}
 											/>
 										</div>
@@ -351,12 +384,12 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 						</>
 					) : (
 						<div className="space-y-2">
-							<Label htmlFor="sub2api-totp">ä¸¤æ­¥éªŒè¯ç </Label>
+							<Label htmlFor="sub2api-totp">Á½²½ÑéÖ¤Âë</Label>
 							<Input
 								id="sub2api-totp"
 								value={totpCode}
 								onChange={(event) => setTotpCode(event.target.value)}
-								placeholder={maskedEmail ? `å‘é€åˆ° ${maskedEmail}` : "è¯·è¾“å…¥ 6 ä½éªŒè¯ç "}
+								placeholder={maskedEmail ? `·¢ËÍµ½ ${maskedEmail}` : "ÇëÊäÈë 6 Î»ÑéÖ¤Âë"}
 								disabled={loading}
 							/>
 						</div>
@@ -382,7 +415,7 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 						rel="noopener noreferrer"
 						className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
 					>
-						æ‰“å¼€å®˜ç½‘
+						´ò¿ªÕËºÅÖĞĞÄ
 						<ExternalLinkIcon className="size-3" />
 					</a>
 					<div className="flex gap-2">
@@ -396,11 +429,11 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 								}}
 								disabled={loading}
 							>
-								{mode === "login" ? "å»æ³¨å†Œ" : "å»ç™»å½•"}
+								{mode === "login" ? "È¥×¢²á" : "È¥µÇÂ¼"}
 							</Button>
 						)}
 						<Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-							å–æ¶ˆ
+							È¡Ïû
 						</Button>
 						<Button
 							type="button"
@@ -414,7 +447,7 @@ export function Sub2ApiAuthDialog({ open, onOpenChange, onConnected }: Sub2ApiAu
 							}
 						>
 							{loading && <Spinner className="size-4" />}
-							{mode === "register" ? "æ³¨å†Œå¹¶è¿æ¥" : mode === "two-factor" ? "éªŒè¯å¹¶è¿æ¥" : "ç™»å½•å¹¶è¿æ¥"}
+							{mode === "register" ? "×¢²á²¢Á¬½Ó" : mode === "two-factor" ? "ÑéÖ¤²¢Á¬½Ó" : "µÇÂ¼²¢Á¬½Ó"}
 						</Button>
 					</div>
 				</DialogFooter>

@@ -12,7 +12,7 @@ export function useWaitingIndicator() {
 		document.title = hasWaiting ? "(!) Palot \u2014 Input needed" : "Palot"
 
 		return () => {
-			document.title = "Palot"
+			document.title = "Codey"
 		}
 	}, [hasWaiting])
 }

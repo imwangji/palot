@@ -1,6 +1,6 @@
-appId: com.palot.desktop
-productName: Palot
-copyright: Copyright (c) 2025 Palot Contributors
+appId: com.codey.desktop
+productName: Codey
+copyright: Copyright (c) 2026 Codey
 directories:
   buildResources: resources
   output: release
@@ -24,7 +24,7 @@ extraResources:
     to: bin
     filter:
       - "**/*"
-  # Tray icon assets â€” must be at the root of process.resourcesPath
+  # Tray icon assets ¡ª must be at the root of process.resourcesPath
   # so tray.ts can find them via path.join(process.resourcesPath, "iconTemplate.png")
   - from: resources/iconTemplate.png
     to: iconTemplate.png
@@ -54,7 +54,7 @@ mac:
   category: public.app-category.developer-tools
   hardenedRuntime: true
   gatekeeperAssess: false
-  # Notarization â€” uncomment when Apple credentials are configured
+  # Notarization ¡ª uncomment when Apple credentials are configured
   # notarize:
   #   teamId: ${env.APPLE_TEAM_ID}
 
@@ -66,7 +66,7 @@ win:
       arch: [x64]
 
 linux:
-  executableName: palot
+  executableName: codey
   icon: resources/linux-icons
   target:
     - target: AppImage
@@ -76,13 +76,13 @@ linux:
     - target: rpm
       arch: [x64]
   category: Development
-  maintainer: palot
+  maintainer: codey
   desktop:
     entry:
-      Name: Palot
+      Name: Codey
       Comment: AI-powered coding assistant
       Categories: Development;IDE;
-      StartupWMClass: Palot
+      StartupWMClass: Codey
 
 nsis:
   oneClick: false

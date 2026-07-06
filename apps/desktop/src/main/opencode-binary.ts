@@ -64,6 +64,7 @@ export function getOpenCodeEnv(
 		PATH: getAugmentedOpenCodePath(),
 		XDG_CONFIG_HOME: path.join(userData, "opencode-config"),
 		XDG_DATA_HOME: path.join(userData, "opencode-data"),
+		XDG_STATE_HOME: path.join(userData, "opencode-state"),
 		...overrides,
 	}
 }

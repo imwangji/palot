@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises"
-import { homedir } from "node:os"
 import { dirname, join } from "node:path"
+import { app } from "electron"
+import { getServerUrl } from "./opencode-manager"
 
 // ============================================================
 // Types
@@ -26,11 +27,13 @@ const MAX_RECENT = 10
 
 /**
  * Resolves the OpenCode state directory path.
- * Queries the running server first, falls back to default XDG path.
+ * Queries the managed server first, falls back to Codey app data.
  */
 async function resolveStatePath(): Promise<string> {
 	try {
-		const pathRes = await fetch("http://127.0.0.1:4101/path", {
+		const serverUrl = getServerUrl()
+		if (!serverUrl) return join(app.getPath("userData"), "opencode-state", "opencode")
+		const pathRes = await fetch(serverUrl + "/path", {
 			signal: AbortSignal.timeout(2000),
 		})
 		if (pathRes.ok) {
@@ -38,9 +41,9 @@ async function resolveStatePath(): Promise<string> {
 			return paths.state
 		}
 	} catch {
-		// Server unreachable â€” fall through
+		// Server unreachable â€?fall through
 	}
-	return join(homedir(), ".local", "state", "opencode")
+	return join(app.getPath("userData"), "opencode-state", "opencode")
 }
 
 // ============================================================
@@ -52,7 +55,7 @@ async function resolveStatePath(): Promise<string> {
  *
  * First discovers the state directory by querying the running OpenCode server,
  * then reads `{state}/model.json`.
- * Falls back to the default XDG path if the server is unreachable.
+ * Falls back to Palot app data if the server is unreachable.
  */
 export async function readModelState(): Promise<ModelState> {
 	try {
@@ -106,7 +109,7 @@ export async function updateModelRecent(model: ModelRef): Promise<ModelState> {
 				variant: typeof data.variant === "object" && data.variant !== null ? data.variant : {},
 			}
 		} catch {
-			// File doesn't exist or is invalid â€” start fresh
+			// File doesn't exist or is invalid â€?start fresh
 		}
 
 		// Prepend model, deduplicate by providerID/modelID, cap at MAX_RECENT

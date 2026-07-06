@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename)
 // full PATH (e.g., spawning opencode) call waitForEnv() before proceeding.
 startEnvResolution()
 
-// Minimal menu â€” required on macOS for Cmd+C/V/X/A to work in web contents.
+// Minimal menu ¡ª required on macOS for Cmd+C/V/X/A to work in web contents.
 // A null menu kills native Edit shortcuts on macOS. This minimal template is
 // negligible overhead compared to the full default menu.
 const menuTemplate: Electron.MenuItemConstructorOptions[] = [
@@ -39,7 +39,7 @@ const menuTemplate: Electron.MenuItemConstructorOptions[] = [
 ]
 Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate))
 
-// Collect Chromium feature flags â€” must be merged into a single --disable-features
+// Collect Chromium feature flags ¡ª must be merged into a single --disable-features
 // switch because Electron's appendSwitch overwrites (not appends) duplicate keys.
 const disabledFeatures: string[] = []
 
@@ -58,20 +58,20 @@ if (process.platform === "linux") {
 	// GTK needs the GdkPixbuf loaders cache to decode PNG/SVG icons from the
 	// icon theme. Electron's bundled Chromium often can't locate the host system's
 	// loaders, causing "Could not load a pixbuf from icon theme" warnings and
-	// continuous GDK_IS_PIXBUF assertion failures â€” especially visible on Wayland
+	// continuous GDK_IS_PIXBUF assertion failures ¡ª especially visible on Wayland
 	// where GTK renders client-side window decorations (close/minimize/maximize
 	// button icons are loaded from the theme on every frame).
 	if (!process.env.GDK_PIXBUF_MODULE_FILE) {
 		let loadersCachePath: string | undefined
 
-		// Try pkg-config first â€” works across distros regardless of lib path layout
+		// Try pkg-config first ¡ª works across distros regardless of lib path layout
 		try {
 			loadersCachePath = execSync(
 				"pkg-config --variable gdk_pixbuf_cache_file gdk-pixbuf-2.0",
 				{ encoding: "utf-8", timeout: 1000, stdio: ["ignore", "pipe", "ignore"] },
 			).trim()
 		} catch {
-			// pkg-config not installed or gdk-pixbuf-2.0 not registered â€” try known paths
+			// pkg-config not installed or gdk-pixbuf-2.0 not registered ¡ª try known paths
 		}
 
 		if (!loadersCachePath || !fs.existsSync(loadersCachePath)) {
@@ -113,7 +113,7 @@ if (process.platform === "linux") {
 			if (match) {
 				const scale = Number.parseFloat(match[1])
 				if (scale > 0 && scale !== Math.floor(scale)) {
-					// Fractional scale detected â€” disable the buggy Wayland fractional
+					// Fractional scale detected ¡ª disable the buggy Wayland fractional
 					// scale protocol and force the correct DPI scale factor directly.
 					disabledFeatures.push("WaylandFractionalScaleV1")
 					app.commandLine.appendSwitch("force-device-scale-factor", scale.toString())
@@ -121,7 +121,7 @@ if (process.platform === "linux") {
 				}
 			}
 		} catch {
-			// D-Bus call failed (not GNOME, not Wayland, or timeout) â€” ignore.
+			// D-Bus call failed (not GNOME, not Wayland, or timeout) ¡ª ignore.
 			// Chromium's default Wayland scaling will be used.
 		}
 	}
@@ -145,12 +145,12 @@ if (isDev) {
 // The single-instance lock and user-data directory are both keyed on app name,
 // so changing it here prevents the two from conflicting.
 if (isDev) {
-	app.setName("Palot Dev")
-	app.setPath("userData", path.join(app.getPath("appData"), "Palot Dev"))
+	app.setName("Codey Dev")
+	app.setPath("userData", path.join(app.getPath("appData"), "Codey Dev"))
 }
 
 async function createWindow(): Promise<BrowserWindow> {
-	const title = isDev ? "Palot (Dev)" : "Palot"
+	const title = isDev ? "Codey (Dev)" : "Codey"
 
 	const isMac = process.platform === "darwin"
 
@@ -159,7 +159,7 @@ async function createWindow(): Promise<BrowserWindow> {
 	const chrome = await resolveWindowChrome(isOpaque)
 
 	// Resolve the window icon for Linux/Windows. macOS uses the .app bundle icon.
-	// Linux: use 256x256 icon â€” GTK's GdkPixbuf can choke on the full 1024x1024
+	// Linux: use 256x256 icon ¡ª GTK's GdkPixbuf can choke on the full 1024x1024
 	// icon on Wayland, causing GDK_IS_PIXBUF assertion failures.
 	const windowIcon = isMac
 		? undefined
@@ -183,7 +183,7 @@ async function createWindow(): Promise<BrowserWindow> {
 		// Don't show the window until the renderer has painted its first frame.
 		// Prevents a flash of transparent/empty content, especially on Wayland.
 		show: false,
-		// Three-tier window chrome â€” options from resolveWindowChrome()
+		// Three-tier window chrome ¡ª options from resolveWindowChrome()
 		...chrome.options,
 		// Window icon for Linux/Windows
 		...(windowIcon && { icon: windowIcon }),
@@ -197,7 +197,7 @@ async function createWindow(): Promise<BrowserWindow> {
 		},
 	})
 
-	// Show the window once the renderer has painted â€” avoids a flash of
+	// Show the window once the renderer has painted ¡ª avoids a flash of
 	// transparent/blank content while the page loads.
 	win.once("ready-to-show", () => {
 		win.show()

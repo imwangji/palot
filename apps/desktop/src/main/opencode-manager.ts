@@ -1,7 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process"
 import { homedir } from "node:os"
 import { setTimeout as sleep } from "node:timers/promises"
-import { dialog } from "electron"
 import type { LocalServerConfig } from "../preload/api"
 import { getCredential } from "./credential-store"
 import { findFreePort } from "./find-free-port"
@@ -91,15 +90,14 @@ export async function ensureServer(): Promise<OpenCodeServer> {
 	log.info("Checking for existing server on port", port)
 	const detection = await detectExistingServer(hostname, port)
 
-	if (detection.kind === "found") {
-		log.info("Detected existing same-user server", { url: detection.server.url })
-		singleServer = { server: detection.server, process: null }
-		startNotificationWatcher(detection.server.url)
-		return detection.server
-	}
-
-	if (detection.kind === "conflict") {
-		return handleConflict(detection, hostname, port, config)
+	if (detection.kind !== "none") {
+		const url = detection.kind === "found" ? detection.server.url : detection.url
+		log.warn(
+			"Existing OpenCode server detected without a Palot lockfile; starting an isolated managed server instead",
+			{ url, configuredPort: port },
+		)
+		const freePort = await findFreePort(hostname)
+		return spawnServer(hostname, freePort, config)
 	}
 
 	// --- No existing server: spawn one on the configured port ---
@@ -234,63 +232,6 @@ async function detectExistingServer(
 	log.warn("Existing server belongs to a DIFFERENT user", { url, pid: owner.pid, uid: owner.uid })
 	return { kind: "conflict", url, ownerUid: owner.uid }
 }
-
-// ============================================================
-// Internal -- conflict resolution
-// ============================================================
-
-/**
- * Shows a dialog when the server on the target port belongs to a different
- * user. Offers three choices: start on a different port, connect anyway,
- * or cancel.
- */
-async function handleConflict(
-	conflict: { url: string; ownerUid: number | null },
-	hostname: string,
-	_configuredPort: number,
-	config: LocalServerConfig,
-): Promise<OpenCodeServer> {
-	const ownerText =
-		conflict.ownerUid !== null
-			? `It appears to belong to a different user account (UID ${conflict.ownerUid}).`
-			: "Its owner could not be determined."
-
-	const { response } = await dialog.showMessageBox({
-		type: "warning",
-		title: "Server Ownership Conflict",
-		message: "An OpenCode server is already running on the configured port.",
-		detail:
-			`${ownerText}\n\n` +
-			"Connecting to a server owned by another user is a security risk: " +
-			"they could access your sessions and files.\n\n" +
-			"You can start your own server on a different port, or connect anyway " +
-			"if you trust this server.",
-		buttons: ["Start My Own Server", "Connect Anyway", "Cancel"],
-		defaultId: 0,
-		cancelId: 2,
-	})
-
-	if (response === 0) {
-		// Start on a free port
-		log.info("User chose to start own server on a different port")
-		const freePort = await findFreePort(hostname)
-		log.info("Found free port", { freePort })
-		return spawnServer(hostname, freePort, config)
-	}
-
-	if (response === 1) {
-		// Connect anyway (user accepts the risk)
-		log.warn("User chose to connect to foreign server anyway", { url: conflict.url })
-		const server: OpenCodeServer = { url: conflict.url, pid: null, managed: false }
-		singleServer = { server, process: null }
-		startNotificationWatcher(conflict.url)
-		return server
-	}
-
-	// Cancel
-	throw new Error("Server connection cancelled by user due to ownership conflict")
-}
-
 // ============================================================
 // Internal -- server spawning
 // ============================================================

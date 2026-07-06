@@ -11,7 +11,6 @@
 import { existsSync } from "node:fs"
 import { homedir } from "node:os"
 import path from "node:path"
-import { BrowserWindow } from "electron"
 import type { OpenCodeCheckResult } from "./compatibility"
 import { checkOpenCode } from "./compatibility"
 import { createLogger } from "./logger"
@@ -125,7 +124,7 @@ let installProcess = false
  */
 export async function installOpenCode(): Promise<{ success: boolean; error?: string }> {
 	if (installProcess) {
-		return { success: false, error: "å®‰è£…å·²åœ¨è¿›è¡Œä¸­" }
+		return { success: false, error: "°²×°ÒÑÔÚ½øÐÐÖÐ" }
 	}
 
 	installProcess = true
@@ -133,7 +132,7 @@ export async function installOpenCode(): Promise<{ success: boolean; error?: str
 	installProcess = false
 	return {
 		success: false,
-		error: "å½“å‰ç‰ˆæœ¬å·²å†…ç½® OpenCodeï¼Œæ— éœ€å•ç‹¬å®‰è£…ã€‚è¯·é‡æ–°å®‰è£…æœ€æ–°ç‰ˆå®¢æˆ·ç«¯ã€‚",
+		error: "µ±Ç°°æ±¾ÒÑÄÚÖÃ OpenCode£¬ÎÞÐèµ¥¶À°²×°¡£ÇëÖØÐÂ°²×°×îÐÂ°æ¿Í»§¶Ë¡£",
 	}
 }
 
@@ -424,306 +423,44 @@ export async function scanProvider(provider: MigrationProvider): Promise<{
  * Runs a dry-run migration preview. Returns what would be changed without writing anything.
  */
 export async function previewMigration(
-	provider: MigrationProvider,
-	scanResult: unknown,
-	categories: string[],
+	_provider: MigrationProvider,
+	_scanResult: unknown,
+	_categories: string[],
 ): Promise<MigrationPreview> {
-	const { universalConvert } = await import("@palot/configconv")
-
-	// Convert from source provider to OpenCode (the target for Palot)
-	// biome-ignore lint/suspicious/noExplicitAny: scanResult is dynamically typed from IPC
-	const conversion = universalConvert(scanResult as any, { to: "opencode" })
-
-	const categoryPreviews: MigrationCategoryPreview[] = []
-
-	// Global config
-	if (Object.keys(conversion.globalConfig).length > 0) {
-		const content = JSON.stringify(conversion.globalConfig, null, 2)
-		categoryPreviews.push({
-			category: "config",
-			itemCount: 1,
-			files: [
-				{
-					path: "~/.config/opencode/opencode.json",
-					status: "new",
-					lineCount: content.split("\n").length,
-					content,
-				},
-			],
-		})
-	}
-
-	// Project configs
-	for (const [projectPath, config] of conversion.projectConfigs) {
-		if (Object.keys(config).length > 0) {
-			const content = JSON.stringify(config, null, 2)
-			categoryPreviews.push({
-				category: "mcp",
-				itemCount: 1,
-				files: [
-					{
-						path: path.join(projectPath, "opencode.json"),
-						status: "new",
-						lineCount: content.split("\n").length,
-						content,
-					},
-				],
-			})
-		}
-	}
-
-	// Agents
-	if (conversion.agents.size > 0) {
-		const files: MigrationFilePreview[] = []
-		for (const [filePath, content] of conversion.agents) {
-			files.push({
-				path: filePath,
-				status: "new",
-				lineCount: content.split("\n").length,
-				content,
-			})
-		}
-		categoryPreviews.push({ category: "agents", itemCount: files.length, files })
-	}
-
-	// Commands
-	if (conversion.commands.size > 0) {
-		const files: MigrationFilePreview[] = []
-		for (const [filePath, content] of conversion.commands) {
-			files.push({
-				path: filePath,
-				status: "new",
-				lineCount: content.split("\n").length,
-				content,
-			})
-		}
-		categoryPreviews.push({ category: "commands", itemCount: files.length, files })
-	}
-
-	// Rules
-	if (conversion.rules.size > 0) {
-		const files: MigrationFilePreview[] = []
-		for (const [filePath, content] of conversion.rules) {
-			files.push({
-				path: filePath,
-				status: "new",
-				lineCount: content.split("\n").length,
-				content,
-			})
-		}
-		categoryPreviews.push({ category: "rules", itemCount: files.length, files })
-	}
-
-	// Extra files (plugins etc.)
-	if (conversion.extraFiles.size > 0) {
-		const files: MigrationFilePreview[] = []
-		for (const [filePath, content] of conversion.extraFiles) {
-			files.push({
-				path: filePath,
-				status: "new",
-				lineCount: content.split("\n").length,
-				content,
-			})
-		}
-		categoryPreviews.push({ category: "extra", itemCount: files.length, files })
-	}
-
-	// History (Cursor or Claude Code)
-	let sessionCount = 0
-	let sessionProjectCount = 0
-	if (categories.includes("history")) {
-		const historyResult = await previewHistoryMigration(provider, scanResult)
-		if (historyResult) {
-			sessionCount = historyResult.sessionCount
-			sessionProjectCount = historyResult.projectCount
-			if (sessionCount > 0) {
-				categoryPreviews.push({
-					category: "history",
-					itemCount: sessionCount,
-					files: [
-						{
-							path: "~/.local/share/opencode/storage/",
-							status: "new",
-							lineCount: 0,
-							content: `${sessionCount} chat sessions across ${sessionProjectCount} projects will be imported`,
-						},
-					],
-				})
-			}
-		}
-	}
-
-	const totalFiles = categoryPreviews.reduce((sum, c) => sum + c.files.length, 0)
-
+	void _scanResult
+	void _categories
 	return {
-		categories: categoryPreviews,
-		warnings: [...conversion.report.warnings],
-		manualActions: [...conversion.report.manualActions],
-		errors: [...conversion.report.errors],
-		fileCount: totalFiles,
-		sessionCount,
-		sessionProjectCount,
+		categories: [],
+		warnings: ["Codey does not import or migrate external agent configurations."],
+		manualActions: [],
+		errors: [],
+		fileCount: 0,
+		sessionCount: 0,
+		sessionProjectCount: 0,
 	}
 }
-
-/**
- * Preview history migration for the given provider scan result.
- */
-async function previewHistoryMigration(
-	provider: MigrationProvider,
-	scanResult: unknown,
-): Promise<{ sessionCount: number; projectCount: number } | null> {
-	// biome-ignore lint/suspicious/noExplicitAny: dynamically typed from IPC
-	const result = scanResult as any
-	if (provider === "cursor" && result?.data?.history) {
-		const history = result.data.history
-		const projectPaths = new Set<string>()
-		for (const session of history.sessions ?? []) {
-			if (session.projectPath) projectPaths.add(session.projectPath)
-		}
-		return {
-			sessionCount: history.totalSessions ?? 0,
-			projectCount: projectPaths.size,
-		}
-	}
-	if (provider === "claude-code" && result?.data?.history) {
-		return {
-			sessionCount: result.data.history.totalSessions ?? 0,
-			projectCount: result.data.history.sessionIndices?.length ?? 0,
-		}
-	}
-	return null
-}
-
 /**
  * Executes the migration, writing files to disk with a backup.
  * Sends progress events to the renderer via IPC during history migration.
  */
 export async function executeMigration(
-	provider: MigrationProvider,
-	scanResult: unknown,
-	categories: string[],
+	_provider: MigrationProvider,
+	_scanResult: unknown,
+	_categories: string[],
 ): Promise<MigrationResult> {
-	const { universalConvert, universalWrite } = await import("@palot/configconv")
-
-	// biome-ignore lint/suspicious/noExplicitAny: scanResult is dynamically typed from IPC
-	const conversion = universalConvert(scanResult as any, { to: "opencode" })
-
-	const writeResult = await universalWrite(conversion, {
-		backup: true,
-		mergeStrategy: "preserve-existing",
-	})
-
-	const allWarnings = [...conversion.report.warnings]
-	const allManualActions = [...conversion.report.manualActions]
-	const allErrors = [...conversion.report.errors]
-	const allFilesWritten = [...writeResult.filesWritten]
-	let historyDuplicatesSkipped = 0
-
-	// Write history sessions if selected
-	if (categories.includes("history")) {
-		try {
-			const historyResult = await executeHistoryMigration(provider, scanResult)
-			allFilesWritten.push(...historyResult.filesWritten)
-			historyDuplicatesSkipped = historyResult.duplicatesSkipped
-
-			if (historyResult.duplicatesSkipped > 0) {
-				allWarnings.push(
-					`${historyResult.duplicatesSkipped} chat session${historyResult.duplicatesSkipped === 1 ? " was" : "s were"} already imported and skipped.`,
-				)
-			}
-		} catch (err) {
-			allErrors.push(
-				`History migration failed: ${err instanceof Error ? err.message : String(err)}`,
-			)
-		}
-	}
-
+	void _scanResult
+	void _categories
 	return {
-		success: true,
-		filesWritten: allFilesWritten,
-		filesSkipped: writeResult.filesSkipped,
-		backupDir: writeResult.backupDir ?? null,
-		warnings: allWarnings,
-		manualActions: allManualActions,
-		errors: allErrors,
-		historyDuplicatesSkipped,
+		success: false,
+		filesWritten: [],
+		filesSkipped: [],
+		backupDir: null,
+		warnings: ["Codey keeps user agent configurations isolated and does not perform migrations."],
+		manualActions: [],
+		errors: [],
+		historyDuplicatesSkipped: 0,
 	}
 }
-
-/**
- * Execute history migration: convert sessions and write to OpenCode storage.
- * Uses the detailed writer with deduplication and sends progress to the renderer.
- */
-async function executeHistoryMigration(
-	provider: MigrationProvider,
-	scanResult: unknown,
-): Promise<{ filesWritten: string[]; duplicatesSkipped: number }> {
-	// biome-ignore lint/suspicious/noExplicitAny: dynamically typed from IPC
-	const result = scanResult as any
-
-	const sendProgress = (phase: string, current: number, total: number, skipped: number) => {
-		for (const win of BrowserWindow.getAllWindows()) {
-			win.webContents.send("onboarding:migration-progress", {
-				phase,
-				current,
-				total,
-				duplicatesSkipped: skipped,
-			})
-		}
-	}
-
-	if (provider === "cursor" && result?.data?.history) {
-		const { convertCursorHistory } = await import("@palot/configconv/converter/cursor-history")
-		const { writeHistorySessionsDetailed } = await import("@palot/configconv/writer/history")
-
-		sendProgress("converting", 0, 0, 0)
-		const { sessions } = convertCursorHistory(result.data.history)
-
-		if (sessions.length > 0) {
-			const writeResult = await writeHistorySessionsDetailed(sessions, {
-				onProgress: (progress) => {
-					sendProgress(
-						progress.phase,
-						progress.sessionIndex,
-						progress.sessionCount,
-						progress.duplicatesSkipped,
-					)
-				},
-			})
-			return {
-				filesWritten: writeResult.filesWritten,
-				duplicatesSkipped: writeResult.duplicatesSkipped.length,
-			}
-		}
-	} else if (provider === "claude-code" && result?.data?.history) {
-		const { convertHistory } = await import("@palot/configconv/converter/history")
-		const { writeHistorySessionsDetailed } = await import("@palot/configconv/writer/history")
-
-		sendProgress("converting", 0, 0, 0)
-		const { sessions } = await convertHistory(result.data.history)
-
-		if (sessions.length > 0) {
-			const writeResult = await writeHistorySessionsDetailed(sessions, {
-				onProgress: (progress) => {
-					sendProgress(
-						progress.phase,
-						progress.sessionIndex,
-						progress.sessionCount,
-						progress.duplicatesSkipped,
-					)
-				},
-			})
-			return {
-				filesWritten: writeResult.filesWritten,
-				duplicatesSkipped: writeResult.duplicatesSkipped.length,
-			}
-		}
-	}
-
-	return { filesWritten: [], duplicatesSkipped: 0 }
-}
-
 /**
  * Restores a migration backup.
  */
